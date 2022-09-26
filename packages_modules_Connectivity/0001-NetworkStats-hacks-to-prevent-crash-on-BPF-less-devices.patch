@@ -1,0 +1,140 @@
+From 63c06684709dac913e943f52c3883e3b3d42f756 Mon Sep 17 00:00:00 2001
+From: Yaroslav Zviezda <acroreiser@gmail.com>
+Date: Wed, 21 Sep 2022 21:48:44 +0300
+Subject: [PATCH] NetworkStats: hacks to prevent crash on BPF-less devices
+
+Fixes following crash on app uninstalling:
+
+09-21 21: 19:34.135  1881  2002 E AndroidRuntime: *** FATAL EXCEPTION IN SYSTEM PROCESS: NetworkStats
+09-21 21: 19:34.135  1881  2002 E AndroidRuntime: java.lang.RuntimeException: Error receiving broadcast Intent { act=android.intent.action.UID_REMOVED flg=0x5000010 (has extras) } in com.android.server.net.NetworkStatsService$4@990c5f7
+09-21 21: 19:34.135  1881  2002 E AndroidRuntime: 	at android.app.LoadedApk$ReceiverDispatcher$Args.lambda$getRunnable$0$android-app-LoadedApk$ReceiverDispatcher$Args(LoadedApk.java:1800)
+09-21 21: 19:34.135  1881  2002 E AndroidRuntime: 	at android.app.LoadedApk$ReceiverDispatcher$Args$$ExternalSyntheticLambda0.run(Unknown Source:2)
+09-21 21: 19:34.135  1881  2002 E AndroidRuntime: 	at android.os.Handler.handleCallback(Handler.java:942)
+09-21 21: 19:34.135  1881  2002 E AndroidRuntime: 	at android.os.Handler.dispatchMessage(Handler.java:99)
+09-21 21: 19:34.135  1881  2002 E AndroidRuntime: 	at android.os.Looper.loopOnce(Looper.java:201)
+09-21 21: 19:34.135  1881  2002 E AndroidRuntime: 	at android.os.Looper.loop(Looper.java:288)
+09-21 21: 19:34.135  1881  2002 E AndroidRuntime: 	at android.os.HandlerThread.run(HandlerThread.java:67)
+09-21 21: 19:34.135  1881  2002 E AndroidRuntime: Caused by: java.lang.NullPointerException: Attempt to invoke interface method 'void android.net.connectivity.com.android.net.module.util.IBpfMap.forEach(android.net.connectivity.com.android.net.module.util.IBpfMap$ThrowingBiConsumer)' on a null object reference
+09-21 21: 19:34.135  1881  2002 E AndroidRuntime: 	at com.android.server.net.NetworkStatsService.deleteKernelTagData(NetworkStatsService.java:2425)
+09-21 21: 19:34.135  1881  2002 E AndroidRuntime: 	at com.android.server.net.NetworkStatsService.removeUidsLocked(NetworkStatsService.java:2475)
+09-21 21: 19:34.135  1881  2002 E AndroidRuntime: 	at com.android.server.net.NetworkStatsService.-$$Nest$mremoveUidsLocked(Unknown Source:0)
+09-21 21: 19:34.135  1881  2002 E AndroidRuntime: 	at com.android.server.net.NetworkStatsService$4.onReceive(NetworkStatsService.java:1959)
+09-21 21: 19:34.135  1881  2002 E AndroidRuntime: 	at android.app.LoadedApk$ReceiverDispatcher$Args.lambda$getRunnable$0$android-app-LoadedApk$ReceiverDispatcher$Args(LoadedApk.java:1790)
+09-21 21: 19:34.135  1881  2002 E AndroidRuntime: 	... 6 more
+Change-Id: Iabfe66bd48aab8fe9bc1421e4a3d468897ac04a7
+---
+ .../libs/libnetworkstats/BpfNetworkStats.cpp  | 64 +------------------
+ .../server/net/NetworkStatsService.java       |  4 +-
+ 2 files changed, 4 insertions(+), 64 deletions(-)
+
+diff --git a/service-t/native/libs/libnetworkstats/BpfNetworkStats.cpp b/service-t/native/libs/libnetworkstats/BpfNetworkStats.cpp
+index 715356027d..5595963220 100644
+--- a/service-t/native/libs/libnetworkstats/BpfNetworkStats.cpp
++++ b/service-t/native/libs/libnetworkstats/BpfNetworkStats.cpp
+@@ -40,10 +40,6 @@ namespace bpf {
+ 
+ using base::Result;
+ 
+-// The target map for stats reading should be the inactive map, which is opposite
+-// from the config value.
+-static constexpr char const* STATS_MAP_PATH[] = {STATS_MAP_B_PATH, STATS_MAP_A_PATH};
+-
+ int bpfGetUidStatsInternal(uid_t uid, Stats* stats,
+                            const BpfMap<uint32_t, StatsValue>& appUidStatsMap) {
+     auto statsEntry = appUidStatsMap.readValue(uid);
+@@ -174,49 +170,7 @@ int parseBpfNetworkStatsDetailInternal(std::vector<stats_line>* lines,
+ int parseBpfNetworkStatsDetail(std::vector<stats_line>* lines,
+                                const std::vector<std::string>& limitIfaces, int limitTag,
+                                int limitUid) {
+-    BpfMapRO<uint32_t, IfaceValue> ifaceIndexNameMap(IFACE_INDEX_NAME_MAP_PATH);
+-    if (!ifaceIndexNameMap.isValid()) {
+-        int ret = -errno;
+-        ALOGE("get ifaceIndexName map fd failed: %s", strerror(errno));
+-        return ret;
+-    }
+-
+-    BpfMapRO<uint32_t, uint32_t> configurationMap(CONFIGURATION_MAP_PATH);
+-    if (!configurationMap.isValid()) {
+-        int ret = -errno;
+-        ALOGE("get configuration map fd failed: %s", strerror(errno));
+-        return ret;
+-    }
+-    auto configuration = configurationMap.readValue(CURRENT_STATS_MAP_CONFIGURATION_KEY);
+-    if (!configuration.ok()) {
+-        ALOGE("Cannot read the old configuration from map: %s",
+-              configuration.error().message().c_str());
+-        return -configuration.error().code();
+-    }
+-    const char* statsMapPath = STATS_MAP_PATH[configuration.value()];
+-    BpfMap<StatsKey, StatsValue> statsMap(statsMapPath);
+-    if (!statsMap.isValid()) {
+-        int ret = -errno;
+-        ALOGE("get stats map fd failed: %s, path: %s", strerror(errno), statsMapPath);
+-        return ret;
+-    }
+-
+-    // It is safe to read and clear the old map now since the
+-    // networkStatsFactory should call netd to swap the map in advance already.
+-    int ret = parseBpfNetworkStatsDetailInternal(lines, limitIfaces, limitTag, limitUid, statsMap,
+-                                                 ifaceIndexNameMap);
+-    if (ret) {
+-        ALOGE("parse detail network stats failed: %s", strerror(errno));
+-        return ret;
+-    }
+-
+-    Result<void> res = statsMap.clear();
+-    if (!res.ok()) {
+-        ALOGE("Clean up current stats map failed: %s", strerror(res.error().code()));
+-        return -res.error().code();
+-    }
+-
+-    return 0;
++    return -ENOENT;
+ }
+ 
+ int parseBpfNetworkStatsDevInternal(std::vector<stats_line>* lines,
+@@ -250,21 +204,7 @@ int parseBpfNetworkStatsDevInternal(std::vector<stats_line>* lines,
+ }
+ 
+ int parseBpfNetworkStatsDev(std::vector<stats_line>* lines) {
+-    int ret = 0;
+-    BpfMapRO<uint32_t, IfaceValue> ifaceIndexNameMap(IFACE_INDEX_NAME_MAP_PATH);
+-    if (!ifaceIndexNameMap.isValid()) {
+-        ret = -errno;
+-        ALOGE("get ifaceIndexName map fd failed: %s", strerror(errno));
+-        return ret;
+-    }
+-
+-    BpfMapRO<uint32_t, StatsValue> ifaceStatsMap(IFACE_STATS_MAP_PATH);
+-    if (!ifaceStatsMap.isValid()) {
+-        ret = -errno;
+-        ALOGE("get ifaceStats map fd failed: %s", strerror(errno));
+-        return ret;
+-    }
+-    return parseBpfNetworkStatsDevInternal(lines, ifaceStatsMap, ifaceIndexNameMap);
++    return -ENOENT;
+ }
+ 
+ uint64_t combineUidTag(const uid_t uid, const uint32_t tag) {
+diff --git a/service-t/src/com/android/server/net/NetworkStatsService.java b/service-t/src/com/android/server/net/NetworkStatsService.java
+index 4f0f3411a5..dc6f339497 100644
+--- a/service-t/src/com/android/server/net/NetworkStatsService.java
++++ b/service-t/src/com/android/server/net/NetworkStatsService.java
+@@ -2421,7 +2421,7 @@ private <K extends StatsMapKey, V extends StatsMapValue> void deleteStatsMapTagD
+      * @param uid
+      */
+     private void deleteKernelTagData(int uid) {
+-        try {
++/*        try {
+             mCookieTagMap.forEach((key, value) -> {
+                 // If SkDestroyListener deletes the socket tag while this code is running,
+                 // forEach will either restart iteration from the beginning or return null,
+@@ -2454,7 +2454,7 @@ private void deleteKernelTagData(int uid) {
+             mAppUidStatsMap.deleteEntry(new UidStatsMapKey(uid));
+         } catch (ErrnoException e) {
+             logErrorIfNotErrNoent(e, "Failed to delete tag data from app uid stats map");
+-        }
++        } */
+     }
+ 
+     /**
