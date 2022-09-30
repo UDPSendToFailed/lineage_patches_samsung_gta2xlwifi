@@ -1,0 +1,76 @@
+diff --git a/service-t/src/com/android/server/net/NetworkStatsService.java b/service-t/src/com/android/server/net/NetworkStatsService.java
+index 4f0f341..a9b20f2 100644
+--- a/service-t/src/com/android/server/net/NetworkStatsService.java
++++ b/service-t/src/com/android/server/net/NetworkStatsService.java
+@@ -720,7 +720,6 @@ public class NetworkStatsService extends INetworkStatsService.Stub {
+                 return new BpfMap<U32, U8>(UID_COUNTERSET_MAP_PATH, BpfMap.BPF_F_RDWR,
+                         U32.class, U8.class);
+             } catch (ErrnoException e) {
+-                Log.wtf(TAG, "Cannot open uid counter set map: " + e);
+                 return null;
+             }
+         }
+@@ -731,7 +730,6 @@ public class NetworkStatsService extends INetworkStatsService.Stub {
+                 return new BpfMap<CookieTagMapKey, CookieTagMapValue>(COOKIE_TAG_MAP_PATH,
+                         BpfMap.BPF_F_RDWR, CookieTagMapKey.class, CookieTagMapValue.class);
+             } catch (ErrnoException e) {
+-                Log.wtf(TAG, "Cannot open cookie tag map: " + e);
+                 return null;
+             }
+         }
+@@ -742,7 +740,6 @@ public class NetworkStatsService extends INetworkStatsService.Stub {
+                 return new BpfMap<StatsMapKey, StatsMapValue>(STATS_MAP_A_PATH,
+                         BpfMap.BPF_F_RDWR, StatsMapKey.class, StatsMapValue.class);
+             } catch (ErrnoException e) {
+-                Log.wtf(TAG, "Cannot open stats map A: " + e);
+                 return null;
+             }
+         }
+@@ -753,7 +750,6 @@ public class NetworkStatsService extends INetworkStatsService.Stub {
+                 return new BpfMap<StatsMapKey, StatsMapValue>(STATS_MAP_B_PATH,
+                         BpfMap.BPF_F_RDWR, StatsMapKey.class, StatsMapValue.class);
+             } catch (ErrnoException e) {
+-                Log.wtf(TAG, "Cannot open stats map B: " + e);
+                 return null;
+             }
+         }
+@@ -764,7 +760,6 @@ public class NetworkStatsService extends INetworkStatsService.Stub {
+                 return new BpfMap<UidStatsMapKey, StatsMapValue>(APP_UID_STATS_MAP_PATH,
+                         BpfMap.BPF_F_RDWR, UidStatsMapKey.class, StatsMapValue.class);
+             } catch (ErrnoException e) {
+-                Log.wtf(TAG, "Cannot open app uid stats map: " + e);
+                 return null;
+             }
+         }
+@@ -1709,7 +1704,6 @@ public class NetworkStatsService extends INetworkStatsService.Stub {
+ 
+     private void setKernelCounterSet(int uid, int set) {
+         if (mUidCounterSetMap == null) {
+-            Log.wtf(TAG, "Fail to set UidCounterSet: Null bpf map");
+             return;
+         }
+ 
+@@ -2252,7 +2246,6 @@ public class NetworkStatsService extends INetworkStatsService.Stub {
+         try {
+             recordSnapshotLocked(currentTime);
+         } catch (IllegalStateException e) {
+-            Log.w(TAG, "problem reading network stats: " + e);
+         } catch (RemoteException e) {
+             // ignored; service lives in system_server
+         }
+@@ -2292,7 +2285,6 @@ public class NetworkStatsService extends INetworkStatsService.Stub {
+         try {
+             recordSnapshotLocked(currentTime);
+         } catch (IllegalStateException e) {
+-            Log.wtf(TAG, "problem reading network stats", e);
+             return;
+         } catch (RemoteException e) {
+             // ignored; service lives in system_server
+@@ -2821,7 +2813,6 @@ public class NetworkStatsService extends INetworkStatsService.Stub {
+                 }
+             }
+         } catch (IllegalStateException e) {
+-            Log.wtf(TAG, "problem reading network stats", e);
+         }
+         return stats;
+     }
