@@ -1,0 +1,43 @@
+From 9e2d14baa3a396d816da901a455ad2170bbb1224 Mon Sep 17 00:00:00 2001
+From: Yaroslav Zviezda <acroreiser@gmail.com>
+Date: Fri, 21 Oct 2022 19:43:28 +0300
+Subject: [PATCH] bpfloader: ignore inability to write to index != 0 of bpf map
+ array
+
+This check was added in ead9d83423877458023056f6ccf9390950d6726f
+
+Fixes:
+	Critical kernel bug - failure to write into index 1 of 2 element bpf map array.
+Change-Id: Iad37016cd41bdd4ef9f944c47bfeefc56b85b122
+---
+ bpfloader/BpfLoader.cpp | 16 ++++++++--------
+ 1 file changed, 8 insertions(+), 8 deletions(-)
+
+diff --git a/bpfloader/BpfLoader.cpp b/bpfloader/BpfLoader.cpp
+index 30a4d95..35131a5 100644
+--- a/bpfloader/BpfLoader.cpp
++++ b/bpfloader/BpfLoader.cpp
+@@ -200,15 +200,15 @@ int main(int argc, char** argv) {
+                 return 2;
+             }
+         }
+-    }
+ 
+-    int key = 1;
+-    int value = 123;
+-    android::base::unique_fd map(
+-            android::bpf::createMap(BPF_MAP_TYPE_ARRAY, sizeof(key), sizeof(value), 2, 0));
+-    if (android::bpf::writeToMapEntry(map, &key, &value, BPF_ANY)) {
+-        ALOGE("Critical kernel bug - failure to write into index 1 of 2 element bpf map array.");
+-        return 1;
++        int key = 1;
++        int value = 123;
++        android::base::unique_fd map(
++                android::bpf::createMap(BPF_MAP_TYPE_ARRAY, sizeof(key), sizeof(value), 2, 0));
++        if (android::bpf::writeToMapEntry(map, &key, &value, BPF_ANY)) {
++            ALOGE("Critical kernel bug - failure to write into index 1 of 2 element bpf map array.");
++            return 1;
++        }
+     }
+ 
+     if (android::base::SetProperty("bpf.progs_loaded", "1") == false) {

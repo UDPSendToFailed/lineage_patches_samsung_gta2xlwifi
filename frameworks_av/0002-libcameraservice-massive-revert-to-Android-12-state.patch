@@ -1,7 +1,7 @@
-From 44e692f85cf11aa208d13ffeb1fbd07af6322a13 Mon Sep 17 00:00:00 2001
+From c209c0be076f8dd8dc3fe983ec426b588ba21d07 Mon Sep 17 00:00:00 2001
 From: Yaroslav Zviezda <acroreiser@gmail.com>
 Date: Sun, 18 Sep 2022 19:08:10 +0300
-Subject: [PATCH 03/20] libcameraservice: massive revert to Android 12 state.
+Subject: [PATCH] [2/2] libcameraservice: massive revert to Android 12 state.
 
     Needed to restore HAL1.
 
@@ -777,7 +777,7 @@ index aaa88b2b08..c398acaa02 100644
  namespace android {
  namespace hardware {
  
-@@ -37,7 +35,6 @@ public:
+@@ -37,7 +35,6 @@ class CameraStreamStats : public android::Parcelable {
      int mWidth;
      int mHeight;
      int mFormat;
@@ -785,7 +785,7 @@ index aaa88b2b08..c398acaa02 100644
      int mDataSpace;
      int64_t mUsage;
  
-@@ -63,26 +60,16 @@ public:
+@@ -63,26 +60,16 @@ class CameraStreamStats : public android::Parcelable {
      // size(mHistogramBins) + 1 = size(mHistogramCounts)
      std::vector<int64_t> mHistogramCounts;
  
@@ -820,7 +820,7 @@ index aaa88b2b08..c398acaa02 100644
  
      virtual status_t readFromParcel(const android::Parcel* parcel) override;
      virtual status_t writeToParcel(android::Parcel* parcel) const override;
-@@ -124,7 +111,6 @@ public:
+@@ -124,7 +111,6 @@ class CameraSessionStats : public android::Parcelable {
      bool mIsNdk;
      // latency in ms for camera open, close, or session creation.
      int mLatencyMs;
@@ -828,7 +828,7 @@ index aaa88b2b08..c398acaa02 100644
  
      // Session info and statistics
      int mSessionType;
-@@ -136,8 +122,6 @@ public:
+@@ -136,8 +122,6 @@ class CameraSessionStats : public android::Parcelable {
      // Whether the device runs into an error state
      bool mDeviceError;
      std::vector<CameraStreamStats> mStreamStats;
@@ -873,7 +873,7 @@ diff --git a/camera/include/camera/camera2/OutputConfiguration.h b/camera/includ
 index b842885a6b..f80ed3a8e6 100644
 --- a/camera/include/camera/camera2/OutputConfiguration.h
 +++ b/camera/include/camera/camera2/OutputConfiguration.h
-@@ -38,34 +38,16 @@ public:
+@@ -38,34 +38,16 @@ class OutputConfiguration : public android::Parcelable {
          SURFACE_TYPE_SURFACE_VIEW = 0,
          SURFACE_TYPE_SURFACE_TEXTURE = 1
      };
@@ -908,7 +908,7 @@ index b842885a6b..f80ed3a8e6 100644
  
      // set of sensor pixel mode resolutions allowed {MAX_RESOLUTION, DEFAULT_MODE};
      const std::vector<int32_t>&            getSensorPixelModesUsed() const;
-@@ -107,11 +89,7 @@ public:
+@@ -107,11 +89,7 @@ class OutputConfiguration : public android::Parcelable {
                  gbpsEqual(other) &&
                  mPhysicalCameraId == other.mPhysicalCameraId &&
                  mIsMultiResolution == other.mIsMultiResolution &&
@@ -921,7 +921,7 @@ index b842885a6b..f80ed3a8e6 100644
      }
      bool operator != (const OutputConfiguration& other) const {
          return !(*this == other);
-@@ -148,18 +126,6 @@ public:
+@@ -148,18 +126,6 @@ class OutputConfiguration : public android::Parcelable {
          if (!sensorPixelModesUsedEqual(other)) {
              return sensorPixelModesUsedLessThan(other);
          }
@@ -940,7 +940,7 @@ index b842885a6b..f80ed3a8e6 100644
          return gbpsLessThan(other);
      }
  
-@@ -184,10 +150,6 @@ private:
+@@ -184,10 +150,6 @@ class OutputConfiguration : public android::Parcelable {
      String16                   mPhysicalCameraId;
      bool                       mIsMultiResolution;
      std::vector<int32_t>       mSensorPixelModesUsed;
@@ -1098,25 +1098,6 @@ index b6f8552ae1..abc63acd97 100644
       * post RAW sensitivity boost.</p>
       * <p>This key will be <code>null</code> for devices that do not support any RAW format
       * outputs. For devices that do support RAW format outputs, this key will always
-@@ -2195,15 +2156,15 @@ typedef enum acamera_metadata_tag {
-      *
-      * <p>If this value is greater than 1, then the device supports controlling the
-      * flashlight brightness level via
--     * <a href="https://developer.android.com/reference/android/hardware/camera2/CameraManager.html#turnOnTorchWithStrengthLevel">CameraManager#turnOnTorchWithStrengthLevel</a>.
-+     * {android.hardware.camera2.CameraManager#setTorchStrengthLevel}.
-      * If this value is equal to 1, flashlight brightness control is not supported.
--     * The value for this key will be null for devices with no flash unit.</p>
-+     * This value will be -1 if the flash unit is not available.</p>
-      */
-     ACAMERA_FLASH_INFO_STRENGTH_MAXIMUM_LEVEL =                 // int32
-             ACAMERA_FLASH_INFO_START + 2,
-     /**
-      * <p>Default flashlight brightness level to be set via
--     * <a href="https://developer.android.com/reference/android/hardware/camera2/CameraManager.html#turnOnTorchWithStrengthLevel">CameraManager#turnOnTorchWithStrengthLevel</a>.</p>
-+     * {android.hardware.camera2.CameraManager#setTorchStrengthLevel}.</p>
-      *
-      * <p>Type: int32</p>
-      *
 @@ -2213,15 +2174,14 @@ typedef enum acamera_metadata_tag {
       * </ul></p>
       *
@@ -2079,7 +2060,7 @@ diff --git a/camera/tests/CameraBinderTests.cpp b/camera/tests/CameraBinderTests
 index 17ea51270c..9f2f430f62 100644
 --- a/camera/tests/CameraBinderTests.cpp
 +++ b/camera/tests/CameraBinderTests.cpp
-@@ -96,12 +96,6 @@ public:
+@@ -96,12 +96,6 @@ class TestCameraServiceListener : public hardware::BnCameraServiceListener {
          return binder::Status::ok();
      };
  
@@ -3634,7 +3615,7 @@ index d96ea008bc..49141647a7 100644
  
  #include <set>
  #include <string>
-@@ -107,20 +104,12 @@ public:
+@@ -107,20 +104,12 @@ class CameraService :
      // HAL Callbacks - implements CameraProviderManager::StatusListener
  
      virtual void        onDeviceStatusChanged(const String8 &cameraId,
@@ -3658,7 +3639,7 @@ index d96ea008bc..49141647a7 100644
      virtual void        onNewProviderRegistered() override;
  
      /////////////////////////////////////////////////////////////////////
-@@ -173,12 +162,6 @@ public:
+@@ -173,12 +162,6 @@ class CameraService :
      virtual binder::Status    setTorchMode(const String16& cameraId, bool enabled,
              const sp<IBinder>& clientBinder);
  
@@ -3671,7 +3652,7 @@ index d96ea008bc..49141647a7 100644
      virtual binder::Status    notifySystemEvent(int32_t eventId,
              const std::vector<int32_t>& args);
  
-@@ -197,13 +180,6 @@ public:
+@@ -197,13 +180,6 @@ class CameraService :
              /*out*/
              bool *isSupported);
  
@@ -3685,7 +3666,7 @@ index d96ea008bc..49141647a7 100644
      // Extra permissions checks
      virtual status_t    onTransact(uint32_t code, const Parcel& data,
                                     Parcel* reply, uint32_t flags);
-@@ -243,7 +219,7 @@ public:
+@@ -243,7 +219,7 @@ class CameraService :
  
      /////////////////////////////////////////////////////////////////////
      // CameraDeviceFactory functionality
@@ -3694,7 +3675,7 @@ index d96ea008bc..49141647a7 100644
              int* orientation = nullptr);
  
      /////////////////////////////////////////////////////////////////////
-@@ -339,19 +315,10 @@ public:
+@@ -339,19 +315,10 @@ class CameraService :
          // Set/reset camera mute
          virtual status_t setCameraMute(bool enabled) = 0;
  
@@ -3714,7 +3695,7 @@ index d96ea008bc..49141647a7 100644
                  const std::optional<String16>& clientFeatureId,
                  const String8& cameraIdStr,
                  int cameraFacing,
-@@ -374,7 +341,6 @@ public:
+@@ -374,7 +341,6 @@ class CameraService :
          const int                       mCameraFacing;
          const int                       mOrientation;
          String16                        mClientPackageName;
@@ -3722,7 +3703,7 @@ index d96ea008bc..49141647a7 100644
          std::optional<String16>         mClientFeatureId;
          pid_t                           mClientPid;
          const uid_t                     mClientUid;
-@@ -462,7 +428,6 @@ public:
+@@ -462,7 +428,6 @@ class CameraService :
          Client(const sp<CameraService>& cameraService,
                  const sp<hardware::ICameraClient>& cameraClient,
                  const String16& clientPackageName,
@@ -3730,7 +3711,7 @@ index d96ea008bc..49141647a7 100644
                  const std::optional<String16>& clientFeatureId,
                  const String8& cameraIdStr,
                  int api1CameraId,
-@@ -546,15 +511,14 @@ public:
+@@ -546,15 +511,14 @@ class CameraService :
           */
          static DescriptorPtr makeClientDescriptor(const String8& key, const sp<BasicClient>& value,
                  int32_t cost, const std::set<String8>& conflictingKeys, int32_t score,
@@ -3748,7 +3729,7 @@ index d96ea008bc..49141647a7 100644
  
      }; // class CameraClientManager
  
-@@ -563,6 +527,8 @@ public:
+@@ -563,6 +527,8 @@ class CameraService :
  
  private:
  
@@ -3757,7 +3738,7 @@ index d96ea008bc..49141647a7 100644
      /**
       * Typesafe version of device status, containing both the HAL-layer and the service interface-
       * layer values.
-@@ -592,7 +558,7 @@ private:
+@@ -592,7 +558,7 @@ class CameraService :
           * returned in the HAL's camera_info struct for each device.
           */
          CameraState(const String8& id, int cost, const std::set<String8>& conflicting,
@@ -3766,7 +3747,7 @@ index d96ea008bc..49141647a7 100644
          virtual ~CameraState();
  
          /**
-@@ -649,12 +615,6 @@ private:
+@@ -649,12 +615,6 @@ class CameraService :
           */
          SystemCameraKind getSystemCameraKind() const;
  
@@ -3779,7 +3760,7 @@ index d96ea008bc..49141647a7 100644
          /**
           * Add/Remove the unavailable physical camera ID.
           */
-@@ -683,7 +643,6 @@ private:
+@@ -683,7 +643,6 @@ class CameraService :
          mutable Mutex mStatusLock;
          CameraParameters mShimParams;
          const SystemCameraKind mSystemCameraKind;
@@ -3787,7 +3768,7 @@ index d96ea008bc..49141647a7 100644
      }; // class CameraState
  
      // Observer for UID lifecycle enforcing that UIDs in idle
-@@ -796,7 +755,7 @@ private:
+@@ -796,7 +755,7 @@ class CameraService :
      // Only call with with mServiceLock held.
      status_t handleEvictionsLocked(const String8& cameraId, int clientPid,
          apiLevel effectiveApiLevel, const sp<IBinder>& remoteCallback, const String8& packageName,
@@ -3796,7 +3777,7 @@ index d96ea008bc..49141647a7 100644
          /*out*/
          sp<BasicClient>* client,
          std::shared_ptr<resource_policy::ClientDescriptor<String8, sp<BasicClient>>>* partial);
-@@ -828,7 +787,7 @@ private:
+@@ -828,7 +787,7 @@ class CameraService :
      // Single implementation shared between the various connect calls
      template<class CALLBACK, class CLIENT>
      binder::Status connectHelper(const sp<CALLBACK>& cameraCb, const String8& cameraId,
@@ -3805,7 +3786,7 @@ index d96ea008bc..49141647a7 100644
              const std::optional<String16>& clientFeatureId, int clientUid, int clientPid,
              apiLevel effectiveApiLevel, bool shimUpdateOnly, int scoreOffset, int targetSdkVersion,
              /*out*/sp<CLIENT>& device);
-@@ -905,7 +864,7 @@ private:
+@@ -905,7 +864,7 @@ class CameraService :
       * This method must be called with mServiceLock held.
       */
      void finishConnectLocked(const sp<BasicClient>& client, const DescriptorPtr& desc,
@@ -3814,7 +3795,7 @@ index d96ea008bc..49141647a7 100644
  
      /**
       * Returns the underlying camera Id string mapped to a camera id int
-@@ -1113,7 +1072,7 @@ private:
+@@ -1113,7 +1072,7 @@ class CameraService :
      // guard mTorchUidMap
      Mutex                mTorchUidMapMutex;
      // camera id -> torch status
@@ -3823,7 +3804,7 @@ index d96ea008bc..49141647a7 100644
              mTorchStatusMap;
      // camera id -> torch client binder
      // only store the last client that turns on each camera's torch mode
-@@ -1127,16 +1086,16 @@ private:
+@@ -1127,16 +1086,16 @@ class CameraService :
      // handle torch mode status change and invoke callbacks. mTorchStatusMutex
      // should be locked.
      void onTorchStatusChangedLocked(const String8& cameraId,
@@ -3843,7 +3824,7 @@ index d96ea008bc..49141647a7 100644
  
      // notify physical camera status when the physical camera is public.
      // Expects mStatusListenerLock to be locked.
-@@ -1239,24 +1198,22 @@ private:
+@@ -1239,24 +1198,22 @@ class CameraService :
  
      static binder::Status makeClient(const sp<CameraService>& cameraService,
              const sp<IInterface>& cameraCb, const String16& packageName,
@@ -3876,7 +3857,7 @@ index d96ea008bc..49141647a7 100644
  
      void disconnectClient(const String8& id, sp<BasicClient> clientToDisconnect);
  
-@@ -1283,61 +1240,6 @@ private:
+@@ -1283,61 +1240,6 @@ class CameraService :
  
      // Current camera mute mode
      bool mOverrideCameraMuteMode = false;
@@ -4265,7 +4246,7 @@ diff --git a/services/camera/libcameraservice/api1/Camera2Client.h b/services/ca
 index c8dfc46625..64ab8ff7c2 100644
 --- a/services/camera/libcameraservice/api1/Camera2Client.h
 +++ b/services/camera/libcameraservice/api1/Camera2Client.h
-@@ -238,15 +238,6 @@ private:
+@@ -238,15 +238,6 @@ class Camera2Client :
      status_t initializeImpl(TProviderPtr providerPtr, const String8& monitorTags);
  
      bool isZslEnabledInStillTemplate();
@@ -4460,7 +4441,7 @@ index cbe62a7754..1b2cedad90 100644
  
      // Build fast-access device static info from static info
      status_t buildFastInfo(CameraDeviceBase *device);
-@@ -396,10 +396,9 @@ private:
+@@ -396,10 +396,9 @@ struct Parameters {
  
      Vector<Size> availablePreviewSizes;
      Vector<Size> availableVideoSizes;
@@ -4473,7 +4454,7 @@ index cbe62a7754..1b2cedad90 100644
      // Get max size (from the size array) that matches the given aspect ratio.
      Size getMaxSizeForRatio(float ratio, const int32_t* sizeArray, size_t count);
  
-@@ -459,6 +458,7 @@ private:
+@@ -459,6 +458,7 @@ struct Parameters {
      // Helper function to get the suggested video sizes
      Vector<Size> getPreferredVideoSizes() const;
  
@@ -5014,7 +4995,7 @@ index c5aad6b222..288f2d7cdc 100644
  
  #include "CameraOfflineSessionClient.h"
  #include "CameraService.h"
-@@ -50,7 +49,6 @@ protected:
+@@ -50,7 +49,6 @@ struct CameraDeviceClientBase :
      CameraDeviceClientBase(const sp<CameraService>& cameraService,
              const sp<hardware::camera2::ICameraDeviceCallbacks>& remoteCallback,
              const String16& clientPackageName,
@@ -5022,7 +5003,7 @@ index c5aad6b222..288f2d7cdc 100644
              const std::optional<String16>& clientFeatureId,
              const String8& cameraId,
              int api1CameraId,
-@@ -179,7 +177,6 @@ public:
+@@ -179,7 +177,6 @@ class CameraDeviceClient :
      CameraDeviceClient(const sp<CameraService>& cameraService,
              const sp<hardware::camera2::ICameraDeviceCallbacks>& remoteCallback,
              const String16& clientPackageName,
@@ -5030,7 +5011,7 @@ index c5aad6b222..288f2d7cdc 100644
              const std::optional<String16>& clientFeatureId,
              const String8& cameraId,
              int cameraFacing,
-@@ -229,7 +226,7 @@ protected:
+@@ -229,7 +226,7 @@ class CameraDeviceClient :
      virtual void          detachDevice();
  
      // Calculate the ANativeWindow transform from android.sensor.orientation
@@ -5039,7 +5020,7 @@ index c5aad6b222..288f2d7cdc 100644
  
      bool isUltraHighResolutionSensor(const String8 &cameraId);
  
-@@ -289,7 +286,7 @@ private:
+@@ -289,7 +286,7 @@ class CameraDeviceClient :
  
      // Set the stream transform flags to automatically rotate the camera stream for preview use
      // cases.
@@ -5048,7 +5029,7 @@ index c5aad6b222..288f2d7cdc 100644
  
      // Utility method to insert the surface into SurfaceMap
      binder::Status insertGbpLocked(const sp<IGraphicBufferProducer>& gbp,
-@@ -306,10 +303,6 @@ private:
+@@ -306,10 +303,6 @@ class CameraDeviceClient :
      // Stream ID -> OutputConfiguration. Used for looking up Surface by stream/surface index
      KeyedVector<int32_t, hardware::camera2::params::OutputConfiguration> mConfiguredOutputs;
  
@@ -5059,7 +5040,7 @@ index c5aad6b222..288f2d7cdc 100644
      struct InputStreamConfiguration {
          bool configured;
          int32_t width;
-@@ -341,19 +334,12 @@ private:
+@@ -341,19 +334,12 @@ class CameraDeviceClient :
      // set of high resolution camera id (logical / physical)
      std::unordered_set<std::string> mHighResolutionSensors;
  
@@ -5116,7 +5097,7 @@ diff --git a/services/camera/libcameraservice/api2/CameraOfflineSessionClient.h 
 index f2c42d8544..707bca4a7e 100644
 --- a/services/camera/libcameraservice/api2/CameraOfflineSessionClient.h
 +++ b/services/camera/libcameraservice/api2/CameraOfflineSessionClient.h
-@@ -54,8 +54,7 @@ public:
+@@ -54,8 +54,7 @@ class CameraOfflineSessionClient :
              CameraService::BasicClient(
                      cameraService,
                      IInterface::asBinder(remoteCallback),
@@ -5126,7 +5107,7 @@ index f2c42d8544..707bca4a7e 100644
                      cameraIdStr, cameraFacing, sensorOrientation, clientPid, clientUid, servicePid),
              mRemoteCallback(remoteCallback), mOfflineSession(session),
              mCompositeStreamMap(offlineCompositeStreamMap) {}
-@@ -94,7 +93,7 @@ public:
+@@ -94,7 +93,7 @@ class CameraOfflineSessionClient :
      // NotificationListener API
      void notifyError(int32_t errorCode, const CaptureResultExtras& resultExtras) override;
      void notifyShutter(const CaptureResultExtras& resultExtras, nsecs_t timestamp) override;
@@ -5135,7 +5116,7 @@ index f2c42d8544..707bca4a7e 100644
      void notifyIdle(int64_t requestCount, int64_t resultErrorCount, bool deviceError,
              const std::vector<hardware::CameraStreamStats>& streamStats) override;
      void notifyAutoFocus(uint8_t newState, int triggerId) override;
-@@ -103,9 +102,6 @@ public:
+@@ -103,9 +102,6 @@ class CameraOfflineSessionClient :
      void notifyPrepared(int streamId) override;
      void notifyRequestQueueEmpty() override;
      void notifyRepeatingRequestError(long lastFrameNumber) override;
@@ -5468,7 +5449,7 @@ diff --git a/services/camera/libcameraservice/common/Camera2ClientBase.h b/servi
 index b0d1c3f676..29da33abdf 100644
 --- a/services/camera/libcameraservice/common/Camera2ClientBase.h
 +++ b/services/camera/libcameraservice/common/Camera2ClientBase.h
-@@ -48,7 +48,6 @@ public:
+@@ -48,7 +48,6 @@ class Camera2ClientBase :
      Camera2ClientBase(const sp<CameraService>& cameraService,
                        const sp<TCamCallbacks>& remoteCallback,
                        const String16& clientPackageName,
@@ -5476,7 +5457,7 @@ index b0d1c3f676..29da33abdf 100644
                        const std::optional<String16>& clientFeatureId,
                        const String8& cameraId,
                        int api1CameraId,
-@@ -73,11 +72,10 @@ public:
+@@ -73,11 +72,10 @@ class Camera2ClientBase :
  
      virtual void          notifyError(int32_t errorCode,
                                        const CaptureResultExtras& resultExtras);
@@ -5492,7 +5473,7 @@ index b0d1c3f676..29da33abdf 100644
      virtual void          notifyShutter(const CaptureResultExtras& resultExtras,
                                          nsecs_t timestamp);
      virtual void          notifyAutoFocus(uint8_t newState, int triggerId);
-@@ -88,11 +86,6 @@ public:
+@@ -88,11 +86,6 @@ class Camera2ClientBase :
      virtual void          notifyRequestQueueEmpty();
      virtual void          notifyRepeatingRequestError(long lastFrameNumber);
  
@@ -5504,7 +5485,7 @@ index b0d1c3f676..29da33abdf 100644
      int                   getCameraId() const;
      const sp<CameraDeviceBase>&
                            getCameraDevice();
-@@ -125,16 +118,10 @@ public:
+@@ -125,16 +118,10 @@ class Camera2ClientBase :
          mutable Mutex mRemoteCallbackLock;
      } mSharedCameraCallbacks;
  
@@ -5521,7 +5502,7 @@ index b0d1c3f676..29da33abdf 100644
  
      virtual sp<IBinder> asBinderWrapper() {
          return IInterface::asBinder(this);
-@@ -152,12 +139,11 @@ protected:
+@@ -152,12 +139,11 @@ class Camera2ClientBase :
  
      /** CameraDeviceBase instance wrapping HAL3+ entry */
  
@@ -8297,7 +8278,7 @@ index a66598d9b2..8a1652b4b6 100644
  /**
   * A manager for all camera providers available on an Android device.
   *
-@@ -126,18 +99,14 @@ public:
+@@ -126,18 +99,14 @@ class IdlVendorTagDescriptor : public VendorTagDescriptor {
   * opening them for active use.
   *
   */
@@ -8319,7 +8300,7 @@ index a66598d9b2..8a1652b4b6 100644
          virtual bool registerForNotifications(
                  const std::string &serviceName,
                  const sp<hidl::manager::V1_0::IServiceNotification>
-@@ -149,12 +118,12 @@ public:
+@@ -149,12 +118,12 @@ class CameraProviderManager : virtual public hidl::manager::V1_0::IServiceNotifi
          virtual sp<hardware::camera::provider::V2_4::ICameraProvider> getService(
                  const std::string &serviceName) = 0;
          virtual hardware::hidl_vec<hardware::hidl_string> listServices() = 0;
@@ -8334,7 +8315,7 @@ index a66598d9b2..8a1652b4b6 100644
          virtual bool registerForNotifications(
                  const std::string &serviceName,
                  const sp<hidl::manager::V1_0::IServiceNotification>
-@@ -181,15 +150,12 @@ public:
+@@ -181,15 +150,12 @@ class CameraProviderManager : virtual public hidl::manager::V1_0::IServiceNotifi
          ~StatusListener() {}
  
          virtual void onDeviceStatusChanged(const String8 &cameraId,
@@ -8353,7 +8334,7 @@ index a66598d9b2..8a1652b4b6 100644
          virtual void onNewProviderRegistered() = 0;
      };
  
-@@ -209,10 +175,7 @@ public:
+@@ -209,10 +175,7 @@ class CameraProviderManager : virtual public hidl::manager::V1_0::IServiceNotifi
       * used for testing. The lifetime of the proxy must exceed the lifetime of the manager.
       */
      status_t initialize(wp<StatusListener> listener,
@@ -8365,7 +8346,7 @@ index a66598d9b2..8a1652b4b6 100644
  
      /**
       * Retrieve the total number of available cameras.
-@@ -230,6 +193,11 @@ public:
+@@ -230,6 +193,11 @@ class CameraProviderManager : virtual public hidl::manager::V1_0::IServiceNotifi
       */
      std::vector<std::string> getAPI1CompatibleCameraDeviceIds() const;
  
@@ -8377,7 +8358,7 @@ index a66598d9b2..8a1652b4b6 100644
      /**
       * Return true if a device with a given ID has a flash unit. Returns false
       * for devices that are unknown.
-@@ -245,7 +213,7 @@ public:
+@@ -245,7 +213,7 @@ class CameraProviderManager : virtual public hidl::manager::V1_0::IServiceNotifi
       * Return the resource cost of this camera device
       */
      status_t getResourceCost(const std::string &id,
@@ -8386,7 +8367,7 @@ index a66598d9b2..8a1652b4b6 100644
  
      /**
       * Return the old camera API camera info
-@@ -271,32 +239,20 @@ public:
+@@ -271,32 +239,20 @@ class CameraProviderManager : virtual public hidl::manager::V1_0::IServiceNotifi
       * Check for device support of specific stream combination.
       */
      status_t isSessionConfigurationSupported(const std::string& id,
@@ -8421,7 +8402,7 @@ index a66598d9b2..8a1652b4b6 100644
      /**
       * Turn on or off the flashlight on a given camera device.
       * May fail if the device does not support this API, is in active use, or if the device
-@@ -304,24 +260,6 @@ public:
+@@ -304,24 +260,6 @@ class CameraProviderManager : virtual public hidl::manager::V1_0::IServiceNotifi
       */
      status_t setTorchMode(const std::string &id, bool enabled);
  
@@ -8446,7 +8427,7 @@ index a66598d9b2..8a1652b4b6 100644
      /**
       * Setup vendor tags for all registered providers
       */
-@@ -330,19 +268,8 @@ public:
+@@ -330,19 +268,8 @@ class CameraProviderManager : virtual public hidl::manager::V1_0::IServiceNotifi
      /**
       * Inform registered providers about a device state change, such as folding or unfolding
       */
@@ -8468,7 +8449,7 @@ index a66598d9b2..8a1652b4b6 100644
  
      /**
       * Open an active session to a camera device.
-@@ -350,7 +277,7 @@ public:
+@@ -350,7 +277,7 @@ class CameraProviderManager : virtual public hidl::manager::V1_0::IServiceNotifi
       * This fully powers on the camera device hardware, and returns a handle to a
       * session to be used for hardware configuration and operation.
       */
@@ -8477,7 +8458,7 @@ index a66598d9b2..8a1652b4b6 100644
              const sp<hardware::camera::device::V3_2::ICameraDeviceCallback>& callback,
              /*out*/
              sp<hardware::camera::device::V3_2::ICameraDeviceSession> *session);
-@@ -368,9 +295,6 @@ public:
+@@ -368,9 +295,6 @@ class CameraProviderManager : virtual public hidl::manager::V1_0::IServiceNotifi
              const hardware::hidl_string& name,
              bool preexisting) override;
  
@@ -8487,7 +8468,7 @@ index a66598d9b2..8a1652b4b6 100644
      /**
       * Dump out information about available providers and devices
       */
-@@ -385,7 +309,9 @@ public:
+@@ -385,7 +309,9 @@ class CameraProviderManager : virtual public hidl::manager::V1_0::IServiceNotifi
      /*
       * Return provider type for a specific device.
       */
@@ -8498,7 +8479,7 @@ index a66598d9b2..8a1652b4b6 100644
  
      /*
       * Check if a camera is a logical camera. And if yes, return
-@@ -398,91 +324,106 @@ public:
+@@ -398,91 +324,106 @@ class CameraProviderManager : virtual public hidl::manager::V1_0::IServiceNotifi
  
      status_t filterSmallJpegSizes(const std::string& cameraId);
  
@@ -8646,7 +8627,7 @@ index a66598d9b2..8a1652b4b6 100644
  
          /**
           * Notify provider about top-level device physical state changes
-@@ -491,11 +432,9 @@ private:
+@@ -491,11 +432,9 @@ class CameraProviderManager : virtual public hidl::manager::V1_0::IServiceNotifi
           * It is possible for camera providers to add/remove devices and try to
           * acquire it.
           */
@@ -8661,7 +8642,7 @@ index a66598d9b2..8a1652b4b6 100644
  
          std::vector<std::unordered_set<std::string>> getConcurrentCameraIdCombinations();
  
-@@ -504,62 +443,40 @@ private:
+@@ -504,62 +443,40 @@ class CameraProviderManager : virtual public hidl::manager::V1_0::IServiceNotifi
           *
           * Note that 'mInterfaceMutex' should be held when calling this method.
           */
@@ -8735,7 +8716,7 @@ index a66598d9b2..8a1652b4b6 100644
              virtual status_t getCameraInfo(hardware::CameraInfo *info) const = 0;
              virtual bool isAPI1Compatible() const = 0;
              virtual status_t dumpState(int fd) = 0;
-@@ -577,33 +494,44 @@ private:
+@@ -577,33 +494,44 @@ class CameraProviderManager : virtual public hidl::manager::V1_0::IServiceNotifi
              }
  
              virtual status_t isSessionConfigurationSupported(
@@ -8792,7 +8773,7 @@ index a66598d9b2..8a1652b4b6 100644
          };
          std::vector<std::unique_ptr<DeviceInfo>> mDevices;
          std::unordered_set<std::string> mUniqueCameraIds;
-@@ -618,47 +546,43 @@ private:
+@@ -618,47 +546,43 @@ class CameraProviderManager : virtual public hidl::manager::V1_0::IServiceNotifi
  
          // HALv3-specific camera fields, including the actual device interface
          struct DeviceInfo3 : public DeviceInfo {
@@ -8852,7 +8833,7 @@ index a66598d9b2..8a1652b4b6 100644
              status_t addDynamicDepthTags(bool maxResolution = false);
              status_t deriveHeicTags(bool maxResolution = false);
              status_t addRotateCropTags();
-@@ -688,7 +612,8 @@ private:
+@@ -688,7 +612,8 @@ class CameraProviderManager : virtual public hidl::manager::V1_0::IServiceNotifi
                      const camera_metadata_entry& halStreamConfigs,
                      const camera_metadata_entry& halStreamDurations);
          };
@@ -8862,7 +8843,7 @@ index a66598d9b2..8a1652b4b6 100644
          std::string mType;
          uint32_t mId;
  
-@@ -698,12 +623,12 @@ private:
+@@ -698,12 +623,12 @@ class CameraProviderManager : virtual public hidl::manager::V1_0::IServiceNotifi
  
          struct CameraStatusInfoT {
              bool isPhysicalCameraStatus = false;
@@ -8881,7 +8862,7 @@ index a66598d9b2..8a1652b4b6 100644
                      isPhysicalCameraStatus(isForPhysicalCamera), cameraId(id),
                      physicalCameraId(physicalId), status(s) {}
          };
-@@ -715,19 +640,22 @@ private:
+@@ -715,19 +640,22 @@ class CameraProviderManager : virtual public hidl::manager::V1_0::IServiceNotifi
          // End of scope for mInitLock
  
          std::future<void> mInitialStatusCallbackFuture;
@@ -8912,7 +8893,7 @@ index a66598d9b2..8a1652b4b6 100644
          // Parse provider instance name for type and id
          static status_t parseProviderName(const std::string& name,
                  std::string *type, uint32_t *id);
-@@ -739,71 +667,33 @@ private:
+@@ -739,71 +667,33 @@ class CameraProviderManager : virtual public hidl::manager::V1_0::IServiceNotifi
          // Generate vendor tag id
          static metadata_vendor_id_t generateVendorTagId(const std::string &name);
  
@@ -8997,7 +8978,7 @@ index a66598d9b2..8a1652b4b6 100644
              const sp<ProviderInfo>& providerInfo);
  
      bool isLogicalCameraLocked(const std::string& id, std::vector<std::string>* physicalCameraIds);
-@@ -815,13 +705,18 @@ private:
+@@ -815,13 +705,18 @@ class CameraProviderManager : virtual public hidl::manager::V1_0::IServiceNotifi
      status_t removeProvider(const std::string& provider);
      sp<StatusListener> getStatusListener() const;
  
@@ -9020,7 +9001,7 @@ index a66598d9b2..8a1652b4b6 100644
  
      static const char* deviceStatusToString(
          const hardware::camera::common::V1_0::CameraDeviceStatus&);
-@@ -833,16 +728,20 @@ private:
+@@ -833,16 +728,20 @@ class CameraProviderManager : virtual public hidl::manager::V1_0::IServiceNotifi
      void filterLogicalCameraIdsLocked(std::vector<std::string>& deviceIds) const;
  
      status_t getSystemCameraKindLocked(const std::string& id, SystemCameraKind *kind) const;
@@ -17187,7 +17168,7 @@ diff --git a/services/camera/libcameraservice/device3/Camera3SharedOutputStream.
 index aac3c2a868..4b6341bf2b 100644
 --- a/services/camera/libcameraservice/device3/Camera3SharedOutputStream.h
 +++ b/services/camera/libcameraservice/device3/Camera3SharedOutputStream.h
-@@ -38,14 +38,9 @@ public:
+@@ -38,14 +38,9 @@ class Camera3SharedOutputStream :
              uint64_t consumerUsage, android_dataspace dataSpace,
              camera_stream_rotation_t rotation, nsecs_t timestampOffset,
              const String8& physicalCameraId,
@@ -17629,7 +17610,7 @@ index 0f728a0786..4eb455abea 100644
  #include <gui/IConsumerListener.h>
  #include <gui/IProducerListener.h>
  #include <gui/BufferItemConsumer.h>
-@@ -57,8 +55,7 @@ public:
+@@ -57,8 +55,7 @@ class Camera3StreamSplitter : public BnConsumerListener {
      // with output surfaces.
      status_t connect(const std::unordered_map<size_t, sp<Surface>> &surfaces,
              uint64_t consumerUsage, uint64_t producerUsage, size_t halMaxBuffers, uint32_t width,
@@ -17639,7 +17620,7 @@ index 0f728a0786..4eb455abea 100644
  
      // addOutput adds an output BufferQueue to the splitter. The splitter
      // connects to outputQueue as a CPU producer, and any buffers queued
-@@ -235,7 +232,6 @@ private:
+@@ -235,7 +232,6 @@ class Camera3StreamSplitter : public BnConsumerListener {
      uint32_t mHeight = 0;
      android::PixelFormat mFormat = android::PIXEL_FORMAT_NONE;
      uint64_t mProducerUsage = 0;
@@ -17647,7 +17628,7 @@ index 0f728a0786..4eb455abea 100644
  
      // The attachBuffer call will happen on different thread according to mUseHalBufManager and have
      // different timing constraint.
-@@ -255,9 +251,6 @@ private:
+@@ -255,9 +251,6 @@ class Camera3StreamSplitter : public BnConsumerListener {
      //Map surface ids -> gbp outputs
      std::unordered_map<int, sp<IGraphicBufferProducer> > mOutputs;
  
@@ -23854,7 +23835,7 @@ diff --git a/services/camera/libcameraservice/hidl/AidlCameraServiceListener.cpp
 index add9121432..ddc114ad45 100644
 --- a/services/camera/libcameraservice/hidl/AidlCameraServiceListener.cpp
 +++ b/services/camera/libcameraservice/hidl/AidlCameraServiceListener.cpp
-@@ -70,11 +70,6 @@ binder::Status H2BCameraServiceListener::onPhysicalCameraStatusChanged(
+@@ -70,11 +70,6 @@ ::android::binder::Status H2BCameraServiceListener::onTorchStatusChanged(
    return binder::Status::ok();
  }
  
@@ -23895,7 +23876,7 @@ diff --git a/services/camera/libcameraservice/libcameraservice_fuzzer/camera_ser
 index 97d7bf48d4..e46bf74750 100644
 --- a/services/camera/libcameraservice/libcameraservice_fuzzer/camera_service_fuzzer.cpp
 +++ b/services/camera/libcameraservice/libcameraservice_fuzzer/camera_service_fuzzer.cpp
-@@ -466,12 +466,6 @@ public:
+@@ -466,12 +466,6 @@ class TestCameraServiceListener : public hardware::BnCameraServiceListener {
          // No op
          return binder::Status::ok();
      }
@@ -24308,7 +24289,7 @@ diff --git a/services/camera/libcameraservice/utils/CameraServiceProxyWrapper.h 
 index e34a8f0cbd..b1d7b6c717 100644
 --- a/services/camera/libcameraservice/utils/CameraServiceProxyWrapper.h
 +++ b/services/camera/libcameraservice/utils/CameraServiceProxyWrapper.h
-@@ -48,9 +48,8 @@ private:
+@@ -48,9 +48,8 @@ class CameraServiceProxyWrapper {
          void onOpen();
          void onClose(int32_t latencyMs);
          void onStreamConfigured(int operatingMode, bool internalReconfig, int32_t latencyMs);
@@ -24319,7 +24300,7 @@ index e34a8f0cbd..b1d7b6c717 100644
                  const std::vector<hardware::CameraStreamStats>& streamStats);
      };
  
-@@ -82,12 +81,11 @@ public:
+@@ -82,12 +81,11 @@ class CameraServiceProxyWrapper {
              int32_t latencyMs);
  
      // Session state becomes active
@@ -25742,7 +25723,7 @@ diff --git a/services/camera/libcameraservice/utils/SessionStatsBuilder.h b/serv
 index 2936531cd2..c23abb6067 100644
 --- a/services/camera/libcameraservice/utils/SessionStatsBuilder.h
 +++ b/services/camera/libcameraservice/utils/SessionStatsBuilder.h
-@@ -84,7 +84,6 @@ private:
+@@ -84,7 +84,6 @@ class SessionStatsBuilder {
      int64_t mErrorResultCount;
      bool mCounterStopped;
      bool mDeviceError;
@@ -25750,6 +25731,3 @@ index 2936531cd2..c23abb6067 100644
      // Map from stream id to stream statistics
      std::map<int, StreamStats> mStatsMap;
  };
--- 
-2.34.1
-
