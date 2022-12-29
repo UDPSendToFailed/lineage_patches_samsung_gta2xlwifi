@@ -1,25 +1,28 @@
-From 9e25b471052ac3b7e3cff084a881dceef624a728 Mon Sep 17 00:00:00 2001
+From 9dd54432a05b3e5c1582ea35ba0e7fd85511b212 Mon Sep 17 00:00:00 2001
 From: Yaroslav Zviezda <acroreiser@gmail.com>
 Date: Sun, 18 Sep 2022 04:53:18 +0300
-Subject: [PATCH 07/28] Revert Camera Injection
+Subject: [PATCH 06/10] Revert Camera Injection
 
 This code breaks camera HAL1 restoration and pointless for HAL1 devices.
 
 Change-Id: I901f29496e9443bdf892f544a27d9757d52c192a
+
+ Conflicts:
+	services/companion/java/com/android/server/companion/virtual/CameraAccessController.java
 ---
- .../camera2/CameraInjectionSession.java       | 128 ----------
- .../hardware/camera2/CameraManager.java       | 144 +-----------
- .../impl/CameraInjectionSessionImpl.java      | 219 ------------------
- core/res/AndroidManifest.xml                  |   5 -
- .../virtual/CameraAccessController.java       | 124 ----------
- .../server/camera/CameraServiceProxy.java     |  21 --
- 6 files changed, 2 insertions(+), 639 deletions(-)
+ .../hardware/camera2/CameraInjectionSession.java   | 128 ------------
+ .../android/hardware/camera2/CameraManager.java    | 144 +-------------
+ .../camera2/impl/CameraInjectionSessionImpl.java   | 219 ---------------------
+ core/res/AndroidManifest.xml                       |   5 -
+ .../companion/virtual/CameraAccessController.java  | 128 ------------
+ .../android/server/camera/CameraServiceProxy.java  |  21 --
+ 6 files changed, 2 insertions(+), 643 deletions(-)
  delete mode 100644 core/java/android/hardware/camera2/CameraInjectionSession.java
  delete mode 100644 core/java/android/hardware/camera2/impl/CameraInjectionSessionImpl.java
 
 diff --git a/core/java/android/hardware/camera2/CameraInjectionSession.java b/core/java/android/hardware/camera2/CameraInjectionSession.java
 deleted file mode 100644
-index bd5a4bcd77d7..000000000000
+index bd5a4bc..0000000
 --- a/core/java/android/hardware/camera2/CameraInjectionSession.java
 +++ /dev/null
 @@ -1,128 +0,0 @@
@@ -152,10 +155,10 @@ index bd5a4bcd77d7..000000000000
 -    }
 -}
 diff --git a/core/java/android/hardware/camera2/CameraManager.java b/core/java/android/hardware/camera2/CameraManager.java
-index d6d3a97687b5..9cd06dfc143a 100644
+index 028b1af..42ed2d9 100644
 --- a/core/java/android/hardware/camera2/CameraManager.java
 +++ b/core/java/android/hardware/camera2/CameraManager.java
-@@ -30,7 +30,6 @@ import android.hardware.CameraStatus;
+@@ -31,7 +31,6 @@ import android.hardware.CameraStatus;
  import android.hardware.ICameraService;
  import android.hardware.ICameraServiceListener;
  import android.hardware.camera2.impl.CameraDeviceImpl;
@@ -163,7 +166,7 @@ index d6d3a97687b5..9cd06dfc143a 100644
  import android.hardware.camera2.impl.CameraMetadataNative;
  import android.hardware.camera2.params.ExtensionSessionConfiguration;
  import android.hardware.camera2.params.SessionConfiguration;
-@@ -1098,7 +1097,6 @@ public final class CameraManager {
+@@ -1099,7 +1098,6 @@ public final class CameraManager {
          if (CameraManagerGlobal.sCameraServiceDisabled) {
              throw new IllegalArgumentException("No camera available on device");
          }
@@ -171,7 +174,7 @@ index d6d3a97687b5..9cd06dfc143a 100644
      }
  
      /**
-@@ -1121,10 +1119,7 @@ public final class CameraManager {
+@@ -1122,10 +1120,7 @@ public final class CameraManager {
       */
      public int getTorchStrengthLevel(@NonNull String cameraId)
              throws CameraAccessException {
@@ -183,11 +186,10 @@ index d6d3a97687b5..9cd06dfc143a 100644
      }
  
      /**
-@@ -1426,67 +1421,6 @@ public final class CameraManager {
-         return false;
+@@ -1455,67 +1450,6 @@ public final class CameraManager {
      }
  
--    /**
+     /**
 -     * Inject the external camera to replace the internal camera session.
 -     *
 -     * <p>If injecting the external camera device fails, then the injection callback's
@@ -248,10 +250,11 @@ index d6d3a97687b5..9cd06dfc143a 100644
 -        }
 -    }
 -
-     /**
+-    /**
       * A per-process global camera manager instance, to retain a connection to the camera service,
       * and to distribute camera availability notices to API-registered callbacks
-@@ -1752,10 +1686,6 @@ public final class CameraManager {
+      */
+@@ -1783,10 +1717,6 @@ public final class CameraManager {
                  public void onTorchStatusChanged(int status, String id) throws RemoteException {
                  }
                  @Override
@@ -262,7 +265,7 @@ index d6d3a97687b5..9cd06dfc143a 100644
                  public void onCameraAccessPrioritiesChanged() {
                  }
                  @Override
-@@ -1941,52 +1871,10 @@ public final class CameraManager {
+@@ -1972,52 +1902,10 @@ public final class CameraManager {
  
          public void turnOnTorchWithStrengthLevel(String cameraId, int torchStrength) throws
                  CameraAccessException {
@@ -315,7 +318,7 @@ index d6d3a97687b5..9cd06dfc143a 100644
              return torchStrength;
          }
  
-@@ -2151,14 +2039,7 @@ public final class CameraManager {
+@@ -2182,14 +2070,7 @@ public final class CameraManager {
  
          private void postSingleTorchStrengthLevelUpdate(final TorchCallback callback,
                   final Executor executor, final String id, final int newStrengthLevel) {
@@ -331,7 +334,7 @@ index d6d3a97687b5..9cd06dfc143a 100644
          }
  
          /**
-@@ -2345,19 +2226,6 @@ public final class CameraManager {
+@@ -2381,19 +2262,6 @@ public final class CameraManager {
          } // onTorchStatusChangedLocked
  
          private void onTorchStrengthLevelChangedLocked(String cameraId, int newStrengthLevel) {
@@ -351,11 +354,10 @@ index d6d3a97687b5..9cd06dfc143a 100644
          } // onTorchStrengthLevelChanged
  
          /**
-@@ -2450,14 +2318,6 @@ public final class CameraManager {
-             }
+@@ -2487,14 +2355,6 @@ public final class CameraManager {
          }
  
--        @Override
+         @Override
 -        public void onTorchStrengthLevelChanged(String cameraId, int newStrengthLevel)
 -                throws RemoteException {
 -            synchronized (mLock) {
@@ -363,12 +365,13 @@ index d6d3a97687b5..9cd06dfc143a 100644
 -            }
 -        }
 -
-         @Override
+-        @Override
          public void onCameraAccessPrioritiesChanged() {
              synchronized (mLock) {
+                 final int callbackCount = mCallbackMap.size();
 diff --git a/core/java/android/hardware/camera2/impl/CameraInjectionSessionImpl.java b/core/java/android/hardware/camera2/impl/CameraInjectionSessionImpl.java
 deleted file mode 100644
-index 231cc05ad7cf..000000000000
+index 231cc05..0000000
 --- a/core/java/android/hardware/camera2/impl/CameraInjectionSessionImpl.java
 +++ /dev/null
 @@ -1,219 +0,0 @@
@@ -592,10 +595,10 @@ index 231cc05ad7cf..000000000000
 -    }
 -}
 diff --git a/core/res/AndroidManifest.xml b/core/res/AndroidManifest.xml
-index 7439b2f0921f..44c7e473fc7d 100644
+index 1b90803..3d7bd90 100644
 --- a/core/res/AndroidManifest.xml
 +++ b/core/res/AndroidManifest.xml
-@@ -2630,11 +2630,6 @@
+@@ -2638,11 +2638,6 @@
      <permission android:name="android.permission.CAMERA_SEND_SYSTEM_EVENTS"
          android:protectionLevel="signature|privileged" />
  
@@ -608,10 +611,10 @@ index 7439b2f0921f..44c7e473fc7d 100644
      <!-- Permissions associated with telephony state -->
      <!-- =========================================== -->
 diff --git a/services/companion/java/com/android/server/companion/virtual/CameraAccessController.java b/services/companion/java/com/android/server/companion/virtual/CameraAccessController.java
-index ec0da490adcf..11daa7b05446 100644
+index 2904f28..d5a5e92 100644
 --- a/services/companion/java/com/android/server/companion/virtual/CameraAccessController.java
 +++ b/services/companion/java/com/android/server/companion/virtual/CameraAccessController.java
-@@ -16,14 +16,12 @@
+@@ -16,7 +16,6 @@
  
  package com.android.server.companion.virtual;
  
@@ -619,14 +622,15 @@ index ec0da490adcf..11daa7b05446 100644
  
  import android.annotation.NonNull;
  import android.content.Context;
- import android.content.pm.ApplicationInfo;
+@@ -24,7 +23,6 @@ import android.content.pm.ApplicationInfo;
  import android.content.pm.PackageManager;
+ import android.content.pm.UserInfo;
  import android.hardware.camera2.CameraAccessException;
 -import android.hardware.camera2.CameraInjectionSession;
  import android.hardware.camera2.CameraManager;
- import android.util.ArrayMap;
- import android.util.Slog;
-@@ -49,9 +47,6 @@ class CameraAccessController extends CameraManager.AvailabilityCallback implemen
+ import android.os.Process;
+ import android.os.UserManager;
+@@ -55,9 +53,6 @@ class CameraAccessController extends CameraManager.AvailabilityCallback implemen
      @GuardedBy("mLock")
      private int mObserverCount = 0;
  
@@ -636,7 +640,7 @@ index ec0da490adcf..11daa7b05446 100644
      /**
       * Mapping from camera ID to open camera app associations. Key is the camera id, value is the
       * information of the app's uid and package name.
-@@ -59,11 +54,6 @@ class CameraAccessController extends CameraManager.AvailabilityCallback implemen
+@@ -65,11 +60,6 @@ class CameraAccessController extends CameraManager.AvailabilityCallback implemen
      @GuardedBy("mLock")
      private ArrayMap<String, OpenCameraInfo> mAppsToBlockOnVirtualDevice = new ArrayMap<>();
  
@@ -647,56 +651,60 @@ index ec0da490adcf..11daa7b05446 100644
 -
      static class OpenCameraInfo {
          public String packageName;
-         public int packageUid;
-@@ -128,12 +118,6 @@ class CameraAccessController extends CameraManager.AvailabilityCallback implemen
-                 int packageUid = openCameraInfo.packageUid;
-                 if (runningUids.contains(packageUid)) {
-                     final String packageName = openCameraInfo.packageName;
--                    InjectionSessionData data = mPackageToSessionData.get(packageName);
--                    if (data == null) {
--                        data = new InjectionSessionData();
--                        data.appUid = packageUid;
--                        mPackageToSessionData.put(packageName, data);
--                    }
-                     startBlocking(packageName, cameraId);
-                 }
-             }
-@@ -154,124 +138,16 @@ class CameraAccessController extends CameraManager.AvailabilityCallback implemen
+         public Set<Integer> packageUids;
+@@ -135,12 +125,6 @@ class CameraAccessController extends CameraManager.AvailabilityCallback implemen
+                 final String packageName = openCameraInfo.packageName;
+                 for (int packageUid : openCameraInfo.packageUids) {
+                     if (runningUids.contains(packageUid)) {
+-                        InjectionSessionData data = mPackageToSessionData.get(packageName);
+-                        if (data == null) {
+-                            data = new InjectionSessionData();
+-                            data.appUid = packageUid;
+-                            mPackageToSessionData.put(packageName, data);
+-                        }
+                         startBlocking(packageName, cameraId);
+                         break;
+                     }
+@@ -163,129 +147,17 @@ class CameraAccessController extends CameraManager.AvailabilityCallback implemen
  
      @Override
      public void onCameraOpened(@NonNull String cameraId, @NonNull String packageName) {
 -        synchronized (mLock) {
--            try {
--                final ApplicationInfo ainfo = mPackageManager.getApplicationInfo(packageName, 0);
--                InjectionSessionData data = mPackageToSessionData.get(packageName);
--                if (!mVirtualDeviceManagerInternal.isAppRunningOnAnyVirtualDevice(ainfo.uid)) {
--                    OpenCameraInfo openCameraInfo = new OpenCameraInfo();
--                    openCameraInfo.packageName = packageName;
--                    openCameraInfo.packageUid = ainfo.uid;
--                    mAppsToBlockOnVirtualDevice.put(cameraId, openCameraInfo);
--                    CameraInjectionSession existingSession =
--                            (data != null) ? data.cameraIdToSession.get(cameraId) : null;
--                    if (existingSession != null) {
--                        existingSession.close();
--                        data.cameraIdToSession.remove(cameraId);
--                        if (data.cameraIdToSession.isEmpty()) {
--                            mPackageToSessionData.remove(packageName);
--                        }
+-            InjectionSessionData data = mPackageToSessionData.get(packageName);
+-            List<UserInfo> aliveUsers = mUserManager.getAliveUsers();
+-            ArraySet<Integer> packageUids = new ArraySet<>();
+-            for (UserInfo user : aliveUsers) {
+-                int userId = user.getUserHandle().getIdentifier();
+-                int appUid = queryUidFromPackageName(userId, packageName);
+-                if (mVirtualDeviceManagerInternal.isAppRunningOnAnyVirtualDevice(appUid)) {
+-                    if (data == null) {
+-                        data = new InjectionSessionData();
+-                        data.appUid = appUid;
+-                        mPackageToSessionData.put(packageName, data);
 -                    }
+-                    if (data.cameraIdToSession.containsKey(cameraId)) {
+-                        return;
+-                    }
+-                    startBlocking(packageName, cameraId);
 -                    return;
+-                } else {
+-                    if (appUid != Process.INVALID_UID) {
+-                        packageUids.add(appUid);
+-                    }
 -                }
--                if (data == null) {
--                    data = new InjectionSessionData();
--                    data.appUid = ainfo.uid;
--                    mPackageToSessionData.put(packageName, data);
+-            }
+-            OpenCameraInfo openCameraInfo = new OpenCameraInfo();
+-            openCameraInfo.packageName = packageName;
+-            openCameraInfo.packageUids = packageUids;
+-            mAppsToBlockOnVirtualDevice.put(cameraId, openCameraInfo);
+-            CameraInjectionSession existingSession =
+-                    (data != null) ? data.cameraIdToSession.get(cameraId) : null;
+-            if (existingSession != null) {
+-                existingSession.close();
+-                data.cameraIdToSession.remove(cameraId);
+-                if (data.cameraIdToSession.isEmpty()) {
+-                    mPackageToSessionData.remove(packageName);
 -                }
--                if (data.cameraIdToSession.containsKey(cameraId)) {
--                    return;
--                }
--                startBlocking(packageName, cameraId);
--            } catch (PackageManager.NameNotFoundException e) {
--                Slog.e(TAG, "onCameraOpened - unknown package " + packageName, e);
--                return;
 -            }
 -        }
      }
@@ -736,7 +744,7 @@ index ec0da490adcf..11daa7b05446 100644
 -                            CameraAccessController.this.onInjectionSucceeded(cameraId, packageName,
 -                                    session);
 -                        }
- 
+-
 -                        @Override
 -                        public void onInjectionError(@NonNull int errorCode) {
 -                            CameraAccessController.this.onInjectionError(cameraId, packageName,
@@ -768,7 +776,7 @@ index ec0da490adcf..11daa7b05446 100644
 -            }
 -        }
 -    }
--
+ 
 -    private void onInjectionError(String cameraId, String packageName, @NonNull int errorCode) {
 -        if (errorCode != ERROR_INJECTION_UNSUPPORTED) {
 -            // ERROR_INJECTION_UNSUPPORTED means that there wasn't an external camera to map to the
@@ -785,12 +793,13 @@ index ec0da490adcf..11daa7b05446 100644
 -            }
 -        }
      }
- }
+ 
+     private int queryUidFromPackageName(int userId, String packageName) {
 diff --git a/services/core/java/com/android/server/camera/CameraServiceProxy.java b/services/core/java/com/android/server/camera/CameraServiceProxy.java
-index 15bf74bf3c41..b134a9c09177 100644
+index 0242224..6f29d04 100644
 --- a/services/core/java/com/android/server/camera/CameraServiceProxy.java
 +++ b/services/core/java/com/android/server/camera/CameraServiceProxy.java
-@@ -1019,28 +1019,7 @@ public class CameraServiceProxy extends SystemService
+@@ -1024,28 +1024,7 @@ public class CameraServiceProxy extends SystemService
      }
  
      private boolean notifyUsbDeviceHotplugLocked(@NonNull UsbDevice device, boolean attached) {
@@ -820,5 +829,5 @@ index 15bf74bf3c41..b134a9c09177 100644
      }
  
 -- 
-2.34.1
+2.7.4
 

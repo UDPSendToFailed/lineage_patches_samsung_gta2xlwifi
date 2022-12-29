@@ -1,129 +1,135 @@
-From c209c0be076f8dd8dc3fe983ec426b588ba21d07 Mon Sep 17 00:00:00 2001
+From 0be6b7db5ab5798575ed989deae1a2fe001ef775 Mon Sep 17 00:00:00 2001
 From: Yaroslav Zviezda <acroreiser@gmail.com>
 Date: Sun, 18 Sep 2022 19:08:10 +0300
-Subject: [PATCH] [2/2] libcameraservice: massive revert to Android 12 state.
+Subject: [PATCH 06/26] [2/2] libcameraservice: massive revert to Android 12
+ state.
 
     Needed to restore HAL1.
 
 Change-Id: I737aa1c748c954ffebeefb5d9a00d84f35b1ff05
+
+ Conflicts:
+	services/camera/libcameraservice/CameraService.cpp
+	services/camera/libcameraservice/CameraService.h
+	services/camera/libcameraservice/device3/Camera3Device.cpp
 ---
- camera/Android.bp                             |    2 -
- camera/CameraSessionStats.cpp                 |   79 +-
- camera/CameraUtils.cpp                        |   28 +-
- .../aidl/android/hardware/ICameraService.aidl |   14 -
- .../hardware/ICameraServiceListener.aidl      |    2 -
- .../camera2/ICameraInjectionCallback.aidl     |   44 -
- .../camera2/ICameraInjectionSession.aidl      |   23 -
- camera/camera2/CaptureRequest.cpp             |   22 -
- camera/camera2/OutputConfiguration.cpp        |   80 +-
- camera/cameraserver/Android.bp                |    1 -
- camera/include/camera/CameraSessionStats.h    |   32 +-
- camera/include/camera/CameraUtils.h           |    5 +-
- .../include/camera/camera2/CaptureRequest.h   |    2 -
- .../camera/camera2/OutputConfiguration.h      |   40 +-
- camera/ndk/impl/ACameraManager.h              |    3 -
- .../include/camera/NdkCameraMetadataTags.h    |  682 +-----
- camera/ndk/ndk_vendor/impl/ACameraDevice.cpp  |   41 +-
- camera/ndk/ndk_vendor/impl/utils.h            |   26 +-
- camera/tests/CameraBinderTests.cpp            |    6 -
- media/ndk/NdkImage.cpp                        |    7 +-
- services/camera/libcameraservice/Android.bp   |   44 +-
- .../libcameraservice/CameraFlashlight.cpp     |   71 +-
- .../libcameraservice/CameraFlashlight.h       |   16 -
- .../camera/libcameraservice/CameraService.cpp |  796 ++----
- .../camera/libcameraservice/CameraService.h   |  146 +-
- .../CameraServiceWatchdog.cpp                 |   92 -
- .../libcameraservice/CameraServiceWatchdog.h  |  121 -
- .../libcameraservice/api1/Camera2Client.cpp   |   41 +-
- .../libcameraservice/api1/Camera2Client.h     |    9 -
- .../api1/client2/JpegProcessor.cpp            |   18 +-
- .../api1/client2/Parameters.cpp               |   53 +-
- .../api1/client2/Parameters.h                 |    8 +-
- .../api2/CameraDeviceClient.cpp               |  230 +-
- .../api2/CameraDeviceClient.h                 |   18 +-
- .../api2/CameraOfflineSessionClient.cpp       |   16 +-
- .../api2/CameraOfflineSessionClient.h         |    8 +-
- .../api2/DepthCompositeStream.cpp             |   19 +-
- .../api2/HeicCompositeStream.cpp              |   30 +-
- .../common/Camera2ClientBase.cpp              |   70 +-
- .../common/Camera2ClientBase.h                |   32 +-
- .../common/CameraDeviceBase.h                 |   38 +-
- .../common/CameraOfflineSessionBase.h         |    3 +-
- .../common/CameraProviderInfoTemplated.h      |  112 -
- .../common/CameraProviderManager.cpp          | 1909 +++++++++------
- .../common/CameraProviderManager.h            |  491 ++--
- .../common/DepthPhotoProcessor.cpp            |    4 -
- .../common/HalConversionsTemplated.h          |   97 -
- .../common/aidl/AidlProviderInfo.cpp          |  832 -------
- .../common/aidl/AidlProviderInfo.h            |  168 --
- .../common/hidl/HidlProviderInfo.cpp          | 1050 --------
- .../common/hidl/HidlProviderInfo.h            |  136 --
- .../libcameraservice/device3/BufferUtils.cpp  |   10 +
- .../libcameraservice/device3/BufferUtils.h    |    3 +
- .../device3/Camera3Device.cpp                 | 2143 ++++++++++++++---
- .../libcameraservice/device3/Camera3Device.h  |  302 ++-
- .../device3/Camera3DeviceInjectionMethods.cpp |  121 +
- .../device3/Camera3FakeStream.cpp             |    6 +-
- .../device3/Camera3FakeStream.h               |    7 +-
- .../device3/Camera3IOStreamBase.cpp           |   14 +-
- .../device3/Camera3IOStreamBase.h             |    8 +-
- .../device3/Camera3InputStream.cpp            |    5 +-
- .../device3/Camera3InputStream.h              |    1 -
- .../device3/Camera3OfflineSession.cpp         |  190 +-
- .../device3/Camera3OfflineSession.h           |   48 +-
- .../device3/Camera3OutputStream.cpp           |  356 +--
- .../device3/Camera3OutputStream.h             |   93 +-
- .../device3/Camera3OutputStreamInterface.h    |   10 +-
- .../device3/Camera3OutputUtils.cpp            |  518 +++-
- .../device3/Camera3OutputUtils.h              |   27 +-
- .../device3/Camera3OutputUtilsTemplated.h     |  349 ---
- .../device3/Camera3SharedOutputStream.cpp     |   24 +-
- .../device3/Camera3SharedOutputStream.h       |    9 +-
- .../device3/Camera3Stream.cpp                 |   83 +-
- .../libcameraservice/device3/Camera3Stream.h  |   18 +-
- .../device3/Camera3StreamInterface.h          |   59 +-
- .../device3/Camera3StreamSplitter.cpp         |   17 +-
- .../device3/Camera3StreamSplitter.h           |    9 +-
- .../device3/DistortionMapper.cpp              |    2 +-
- .../device3/InFlightRequest.h                 |   19 +-
- .../device3/PreviewFrameScheduler.cpp         |  210 ++
- .../device3/PreviewFrameScheduler.h           |  108 +
- .../device3/PreviewFrameSpacer.cpp            |  131 -
- .../device3/PreviewFrameSpacer.h              |   94 -
- .../device3/ZoomRatioMapper.cpp               |    2 +-
- .../device3/aidl/AidlCamera3Device.cpp        | 1583 ------------
- .../device3/aidl/AidlCamera3Device.h          |  273 ---
- .../aidl/AidlCamera3OfflineSession.cpp        |  247 --
- .../device3/aidl/AidlCamera3OfflineSession.h  |  136 --
- .../device3/aidl/AidlCamera3OutputUtils.cpp   |  343 ---
- .../device3/aidl/AidlCamera3OutputUtils.h     |  100 -
- .../device3/hidl/HidlCamera3Device.cpp        | 1856 --------------
- .../device3/hidl/HidlCamera3Device.h          |  237 --
- .../hidl/HidlCamera3OfflineSession.cpp        |  235 --
- .../device3/hidl/HidlCamera3OfflineSession.h  |  109 -
- .../device3/hidl/HidlCamera3OutputUtils.cpp   |  261 --
- .../device3/hidl/HidlCamera3OutputUtils.h     |   74 -
- .../hidl/AidlCameraServiceListener.cpp        |    5 -
- .../hidl/AidlCameraServiceListener.h          |    2 -
- .../libcameraservice_fuzzer/Android.bp        |    1 -
- .../camera_service_fuzzer.cpp                 |    6 -
- .../camera/libcameraservice/tests/Android.bp  |   15 +-
- .../tests/CameraProviderManagerTest.cpp       |   10 +-
- .../libcameraservice/tests/NV12Compressor.h   |    1 -
- .../tests/PreviewSchedulerTest.cpp            |  213 ++
- .../utils/CameraServiceProxyWrapper.cpp       |   19 +-
- .../utils/CameraServiceProxyWrapper.h         |    6 +-
- .../libcameraservice/utils/ClientManager.h    |   12 +-
- .../libcameraservice/utils/IPCTransport.h     |   26 -
- .../utils/SessionConfigurationUtils.cpp       |  572 ++---
- .../utils/SessionConfigurationUtils.h         |  163 +-
- .../utils/SessionConfigurationUtilsHidl.cpp   |  156 --
- .../utils/SessionConfigurationUtilsHidl.h     |   52 -
- .../utils/SessionConfigurationUtilsHost.cpp   |   96 -
- .../utils/SessionConfigurationUtilsHost.h     |   36 -
- .../utils/SessionStatsBuilder.cpp             |    1 -
- .../utils/SessionStatsBuilder.h               |    1 -
- 116 files changed, 5682 insertions(+), 13978 deletions(-)
+ camera/Android.bp                                  |    2 -
+ camera/CameraSessionStats.cpp                      |   79 +-
+ camera/CameraUtils.cpp                             |   28 +-
+ camera/aidl/android/hardware/ICameraService.aidl   |   14 -
+ .../android/hardware/ICameraServiceListener.aidl   |    2 -
+ .../hardware/camera2/ICameraInjectionCallback.aidl |   44 -
+ .../hardware/camera2/ICameraInjectionSession.aidl  |   23 -
+ camera/camera2/CaptureRequest.cpp                  |   22 -
+ camera/camera2/OutputConfiguration.cpp             |   80 +-
+ camera/cameraserver/Android.bp                     |    1 -
+ camera/include/camera/CameraSessionStats.h         |   32 +-
+ camera/include/camera/CameraUtils.h                |    5 +-
+ camera/include/camera/camera2/CaptureRequest.h     |    2 -
+ .../include/camera/camera2/OutputConfiguration.h   |   40 +-
+ camera/ndk/impl/ACameraManager.h                   |    3 -
+ camera/ndk/include/camera/NdkCameraMetadataTags.h  |  686 +------
+ camera/ndk/ndk_vendor/impl/ACameraDevice.cpp       |   41 +-
+ camera/ndk/ndk_vendor/impl/utils.h                 |   26 +-
+ camera/tests/CameraBinderTests.cpp                 |    6 -
+ media/ndk/NdkImage.cpp                             |    7 +-
+ services/camera/libcameraservice/Android.bp        |   44 +-
+ .../camera/libcameraservice/CameraFlashlight.cpp   |   71 +-
+ .../camera/libcameraservice/CameraFlashlight.h     |   16 -
+ services/camera/libcameraservice/CameraService.cpp |  784 ++-----
+ services/camera/libcameraservice/CameraService.h   |  146 +-
+ .../libcameraservice/CameraServiceWatchdog.cpp     |   92 -
+ .../libcameraservice/CameraServiceWatchdog.h       |  121 --
+ .../camera/libcameraservice/api1/Camera2Client.cpp |   41 +-
+ .../camera/libcameraservice/api1/Camera2Client.h   |    9 -
+ .../api1/client2/JpegProcessor.cpp                 |   18 +-
+ .../libcameraservice/api1/client2/Parameters.cpp   |   53 +-
+ .../libcameraservice/api1/client2/Parameters.h     |    8 +-
+ .../libcameraservice/api2/CameraDeviceClient.cpp   |  230 +--
+ .../libcameraservice/api2/CameraDeviceClient.h     |   18 +-
+ .../api2/CameraOfflineSessionClient.cpp            |   16 +-
+ .../api2/CameraOfflineSessionClient.h              |    8 +-
+ .../libcameraservice/api2/DepthCompositeStream.cpp |   19 +-
+ .../libcameraservice/api2/HeicCompositeStream.cpp  |   30 +-
+ .../libcameraservice/common/Camera2ClientBase.cpp  |   70 +-
+ .../libcameraservice/common/Camera2ClientBase.h    |   32 +-
+ .../libcameraservice/common/CameraDeviceBase.h     |   38 +-
+ .../common/CameraOfflineSessionBase.h              |    3 +-
+ .../common/CameraProviderInfoTemplated.h           |  112 -
+ .../common/CameraProviderManager.cpp               | 1909 ++++++++++-------
+ .../common/CameraProviderManager.h                 |  491 ++---
+ .../common/DepthPhotoProcessor.cpp                 |    4 -
+ .../common/HalConversionsTemplated.h               |   97 -
+ .../common/aidl/AidlProviderInfo.cpp               |  832 --------
+ .../common/aidl/AidlProviderInfo.h                 |  168 --
+ .../common/hidl/HidlProviderInfo.cpp               | 1050 ----------
+ .../common/hidl/HidlProviderInfo.h                 |  136 --
+ .../libcameraservice/device3/BufferUtils.cpp       |   10 +
+ .../camera/libcameraservice/device3/BufferUtils.h  |    3 +
+ .../libcameraservice/device3/Camera3Device.cpp     | 2143 +++++++++++++++++---
+ .../libcameraservice/device3/Camera3Device.h       |  302 +--
+ .../device3/Camera3DeviceInjectionMethods.cpp      |  121 ++
+ .../libcameraservice/device3/Camera3FakeStream.cpp |    6 +-
+ .../libcameraservice/device3/Camera3FakeStream.h   |    7 +-
+ .../device3/Camera3IOStreamBase.cpp                |   14 +-
+ .../libcameraservice/device3/Camera3IOStreamBase.h |    8 +-
+ .../device3/Camera3InputStream.cpp                 |    5 +-
+ .../libcameraservice/device3/Camera3InputStream.h  |    1 -
+ .../device3/Camera3OfflineSession.cpp              |  190 +-
+ .../device3/Camera3OfflineSession.h                |   48 +-
+ .../device3/Camera3OutputStream.cpp                |  356 +---
+ .../libcameraservice/device3/Camera3OutputStream.h |   93 +-
+ .../device3/Camera3OutputStreamInterface.h         |   10 +-
+ .../device3/Camera3OutputUtils.cpp                 |  518 ++++-
+ .../libcameraservice/device3/Camera3OutputUtils.h  |   27 +-
+ .../device3/Camera3OutputUtilsTemplated.h          |  349 ----
+ .../device3/Camera3SharedOutputStream.cpp          |   24 +-
+ .../device3/Camera3SharedOutputStream.h            |    9 +-
+ .../libcameraservice/device3/Camera3Stream.cpp     |   83 +-
+ .../libcameraservice/device3/Camera3Stream.h       |   18 +-
+ .../device3/Camera3StreamInterface.h               |   59 +-
+ .../device3/Camera3StreamSplitter.cpp              |   17 +-
+ .../device3/Camera3StreamSplitter.h                |    9 +-
+ .../libcameraservice/device3/DistortionMapper.cpp  |    2 +-
+ .../libcameraservice/device3/InFlightRequest.h     |   19 +-
+ .../device3/PreviewFrameScheduler.cpp              |  210 ++
+ .../device3/PreviewFrameScheduler.h                |  108 +
+ .../device3/PreviewFrameSpacer.cpp                 |  131 --
+ .../libcameraservice/device3/PreviewFrameSpacer.h  |   94 -
+ .../libcameraservice/device3/ZoomRatioMapper.cpp   |    2 +-
+ .../device3/aidl/AidlCamera3Device.cpp             | 1590 ---------------
+ .../device3/aidl/AidlCamera3Device.h               |  277 ---
+ .../device3/aidl/AidlCamera3OfflineSession.cpp     |  254 ---
+ .../device3/aidl/AidlCamera3OfflineSession.h       |  140 --
+ .../device3/aidl/AidlCamera3OutputUtils.cpp        |  343 ----
+ .../device3/aidl/AidlCamera3OutputUtils.h          |  100 -
+ .../device3/hidl/HidlCamera3Device.cpp             | 1856 -----------------
+ .../device3/hidl/HidlCamera3Device.h               |  237 ---
+ .../device3/hidl/HidlCamera3OfflineSession.cpp     |  235 ---
+ .../device3/hidl/HidlCamera3OfflineSession.h       |  109 -
+ .../device3/hidl/HidlCamera3OutputUtils.cpp        |  261 ---
+ .../device3/hidl/HidlCamera3OutputUtils.h          |   74 -
+ .../hidl/AidlCameraServiceListener.cpp             |    5 -
+ .../hidl/AidlCameraServiceListener.h               |    2 -
+ .../libcameraservice_fuzzer/Android.bp             |    1 -
+ .../camera_service_fuzzer.cpp                      |    6 -
+ services/camera/libcameraservice/tests/Android.bp  |   15 +-
+ .../tests/CameraProviderManagerTest.cpp            |   10 +-
+ .../camera/libcameraservice/tests/NV12Compressor.h |    1 -
+ .../tests/PreviewSchedulerTest.cpp                 |  213 ++
+ .../utils/CameraServiceProxyWrapper.cpp            |   19 +-
+ .../utils/CameraServiceProxyWrapper.h              |    6 +-
+ .../camera/libcameraservice/utils/ClientManager.h  |   12 +-
+ .../camera/libcameraservice/utils/IPCTransport.h   |   26 -
+ .../utils/SessionConfigurationUtils.cpp            |  572 +++---
+ .../utils/SessionConfigurationUtils.h              |  163 +-
+ .../utils/SessionConfigurationUtilsHidl.cpp        |  156 --
+ .../utils/SessionConfigurationUtilsHidl.h          |   52 -
+ .../utils/SessionConfigurationUtilsHost.cpp        |   96 -
+ .../utils/SessionConfigurationUtilsHost.h          |   36 -
+ .../libcameraservice/utils/SessionStatsBuilder.cpp |    1 -
+ .../libcameraservice/utils/SessionStatsBuilder.h   |    1 -
+ 116 files changed, 5682 insertions(+), 13992 deletions(-)
  delete mode 100644 camera/aidl/android/hardware/camera2/ICameraInjectionCallback.aidl
  delete mode 100644 camera/aidl/android/hardware/camera2/ICameraInjectionSession.aidl
  delete mode 100644 services/camera/libcameraservice/CameraServiceWatchdog.cpp
@@ -159,7 +165,7 @@ Change-Id: I737aa1c748c954ffebeefb5d9a00d84f35b1ff05
  delete mode 100644 services/camera/libcameraservice/utils/SessionConfigurationUtilsHost.h
 
 diff --git a/camera/Android.bp b/camera/Android.bp
-index e44202bfbf..994df62e33 100644
+index e44202b..994df62 100644
 --- a/camera/Android.bp
 +++ b/camera/Android.bp
 @@ -147,8 +147,6 @@ filegroup {
@@ -172,7 +178,7 @@ index e44202bfbf..994df62e33 100644
      path: "aidl",
  }
 diff --git a/camera/CameraSessionStats.cpp b/camera/CameraSessionStats.cpp
-index d1aa36a524..28e037ff94 100644
+index d1aa36a..28e037f 100644
 --- a/camera/CameraSessionStats.cpp
 +++ b/camera/CameraSessionStats.cpp
 @@ -52,12 +52,6 @@ status_t CameraStreamStats::readFromParcel(const android::Parcel* parcel) {
@@ -356,7 +362,7 @@ index d1aa36a524..28e037ff94 100644
  }
  
 diff --git a/camera/CameraUtils.cpp b/camera/CameraUtils.cpp
-index 34737806eb..af3c492762 100644
+index 3473780..af3c492 100644
 --- a/camera/CameraUtils.cpp
 +++ b/camera/CameraUtils.cpp
 @@ -18,7 +18,6 @@
@@ -430,7 +436,7 @@ index 34737806eb..af3c492762 100644
              default:
                  ALOGE("%s: Invalid HAL android.sensor.orientation value: %d",
 diff --git a/camera/aidl/android/hardware/ICameraService.aidl b/camera/aidl/android/hardware/ICameraService.aidl
-index 1e748c7540..9ded2215e8 100644
+index 1e748c7..9ded221 100644
 --- a/camera/aidl/android/hardware/ICameraService.aidl
 +++ b/camera/aidl/android/hardware/ICameraService.aidl
 @@ -20,8 +20,6 @@ import android.hardware.ICamera;
@@ -472,7 +478,7 @@ index 1e748c7540..9ded2215e8 100644
  
      /**
 diff --git a/camera/aidl/android/hardware/ICameraServiceListener.aidl b/camera/aidl/android/hardware/ICameraServiceListener.aidl
-index 5f17f5be59..c54813c8b2 100644
+index 5f17f5b..c54813c 100644
 --- a/camera/aidl/android/hardware/ICameraServiceListener.aidl
 +++ b/camera/aidl/android/hardware/ICameraServiceListener.aidl
 @@ -83,8 +83,6 @@ interface ICameraServiceListener
@@ -486,7 +492,7 @@ index 5f17f5be59..c54813c8b2 100644
       * Clients which were previously unable to open a certain camera device
 diff --git a/camera/aidl/android/hardware/camera2/ICameraInjectionCallback.aidl b/camera/aidl/android/hardware/camera2/ICameraInjectionCallback.aidl
 deleted file mode 100644
-index 9791352c2b..0000000000
+index 9791352..0000000
 --- a/camera/aidl/android/hardware/camera2/ICameraInjectionCallback.aidl
 +++ /dev/null
 @@ -1,44 +0,0 @@
@@ -536,7 +542,7 @@ index 9791352c2b..0000000000
 -}
 diff --git a/camera/aidl/android/hardware/camera2/ICameraInjectionSession.aidl b/camera/aidl/android/hardware/camera2/ICameraInjectionSession.aidl
 deleted file mode 100644
-index c31c30bcad..0000000000
+index c31c30b..0000000
 --- a/camera/aidl/android/hardware/camera2/ICameraInjectionSession.aidl
 +++ /dev/null
 @@ -1,23 +0,0 @@
@@ -564,7 +570,7 @@ index c31c30bcad..0000000000
 -    oneway void stopInjection();
 -}
 diff --git a/camera/camera2/CaptureRequest.cpp b/camera/camera2/CaptureRequest.cpp
-index 7a8a4bae41..ebc09d7429 100644
+index 7a8a4ba..ebc09d7 100644
 --- a/camera/camera2/CaptureRequest.cpp
 +++ b/camera/camera2/CaptureRequest.cpp
 @@ -146,20 +146,6 @@ status_t CaptureRequest::readFromParcel(const android::Parcel* parcel) {
@@ -604,7 +610,7 @@ index 7a8a4bae41..ebc09d7429 100644
  }
  
 diff --git a/camera/camera2/OutputConfiguration.cpp b/camera/camera2/OutputConfiguration.cpp
-index 11d4960dbc..2bccd870b8 100644
+index 11d4960..2bccd87 100644
 --- a/camera/camera2/OutputConfiguration.cpp
 +++ b/camera/camera2/OutputConfiguration.cpp
 @@ -23,7 +23,6 @@
@@ -753,7 +759,7 @@ index 11d4960dbc..2bccd870b8 100644
  }
  
 diff --git a/camera/cameraserver/Android.bp b/camera/cameraserver/Android.bp
-index 094a3c1985..8ca8920012 100644
+index 094a3c1..8ca8920 100644
 --- a/camera/cameraserver/Android.bp
 +++ b/camera/cameraserver/Android.bp
 @@ -43,7 +43,6 @@ cc_binary {
@@ -765,7 +771,7 @@ index 094a3c1985..8ca8920012 100644
          "android.hardware.camera.device@3.2",
          "android.hardware.camera.device@3.4",
 diff --git a/camera/include/camera/CameraSessionStats.h b/camera/include/camera/CameraSessionStats.h
-index aaa88b2b08..c398acaa02 100644
+index aaa88b2..c398aca 100644
 --- a/camera/include/camera/CameraSessionStats.h
 +++ b/camera/include/camera/CameraSessionStats.h
 @@ -19,8 +19,6 @@
@@ -777,7 +783,7 @@ index aaa88b2b08..c398acaa02 100644
  namespace android {
  namespace hardware {
  
-@@ -37,7 +35,6 @@ class CameraStreamStats : public android::Parcelable {
+@@ -37,7 +35,6 @@ public:
      int mWidth;
      int mHeight;
      int mFormat;
@@ -785,7 +791,7 @@ index aaa88b2b08..c398acaa02 100644
      int mDataSpace;
      int64_t mUsage;
  
-@@ -63,26 +60,16 @@ class CameraStreamStats : public android::Parcelable {
+@@ -63,26 +60,16 @@ public:
      // size(mHistogramBins) + 1 = size(mHistogramCounts)
      std::vector<int64_t> mHistogramCounts;
  
@@ -820,7 +826,7 @@ index aaa88b2b08..c398acaa02 100644
  
      virtual status_t readFromParcel(const android::Parcel* parcel) override;
      virtual status_t writeToParcel(android::Parcel* parcel) const override;
-@@ -124,7 +111,6 @@ class CameraSessionStats : public android::Parcelable {
+@@ -124,7 +111,6 @@ public:
      bool mIsNdk;
      // latency in ms for camera open, close, or session creation.
      int mLatencyMs;
@@ -828,7 +834,7 @@ index aaa88b2b08..c398acaa02 100644
  
      // Session info and statistics
      int mSessionType;
-@@ -136,8 +122,6 @@ class CameraSessionStats : public android::Parcelable {
+@@ -136,8 +122,6 @@ public:
      // Whether the device runs into an error state
      bool mDeviceError;
      std::vector<CameraStreamStats> mStreamStats;
@@ -838,7 +844,7 @@ index aaa88b2b08..c398acaa02 100644
      // Constructors
      CameraSessionStats();
 diff --git a/camera/include/camera/CameraUtils.h b/camera/include/camera/CameraUtils.h
-index 31d25e79ea..a397ccdd5e 100644
+index 31d25e7..a397ccd 100644
 --- a/camera/include/camera/CameraUtils.h
 +++ b/camera/include/camera/CameraUtils.h
 @@ -37,13 +37,10 @@ class CameraUtils {
@@ -857,7 +863,7 @@ index 31d25e79ea..a397ccdd5e 100644
          /**
           * Check if the image data is VideoNativeHandleMetadata, that contains a native handle.
 diff --git a/camera/include/camera/camera2/CaptureRequest.h b/camera/include/camera/camera2/CaptureRequest.h
-index 28dbc7cb28..506abab704 100644
+index 28dbc7c..506abab 100644
 --- a/camera/include/camera/camera2/CaptureRequest.h
 +++ b/camera/include/camera/camera2/CaptureRequest.h
 @@ -63,8 +63,6 @@ struct CaptureRequest : public Parcelable {
@@ -870,10 +876,10 @@ index 28dbc7cb28..506abab704 100644
       * Keep impl up-to-date with CaptureRequest.java in frameworks/base
       */
 diff --git a/camera/include/camera/camera2/OutputConfiguration.h b/camera/include/camera/camera2/OutputConfiguration.h
-index b842885a6b..f80ed3a8e6 100644
+index b842885..f80ed3a 100644
 --- a/camera/include/camera/camera2/OutputConfiguration.h
 +++ b/camera/include/camera/camera2/OutputConfiguration.h
-@@ -38,34 +38,16 @@ class OutputConfiguration : public android::Parcelable {
+@@ -38,34 +38,16 @@ public:
          SURFACE_TYPE_SURFACE_VIEW = 0,
          SURFACE_TYPE_SURFACE_TEXTURE = 1
      };
@@ -908,7 +914,7 @@ index b842885a6b..f80ed3a8e6 100644
  
      // set of sensor pixel mode resolutions allowed {MAX_RESOLUTION, DEFAULT_MODE};
      const std::vector<int32_t>&            getSensorPixelModesUsed() const;
-@@ -107,11 +89,7 @@ class OutputConfiguration : public android::Parcelable {
+@@ -107,11 +89,7 @@ public:
                  gbpsEqual(other) &&
                  mPhysicalCameraId == other.mPhysicalCameraId &&
                  mIsMultiResolution == other.mIsMultiResolution &&
@@ -921,7 +927,7 @@ index b842885a6b..f80ed3a8e6 100644
      }
      bool operator != (const OutputConfiguration& other) const {
          return !(*this == other);
-@@ -148,18 +126,6 @@ class OutputConfiguration : public android::Parcelable {
+@@ -148,18 +126,6 @@ public:
          if (!sensorPixelModesUsedEqual(other)) {
              return sensorPixelModesUsedLessThan(other);
          }
@@ -940,7 +946,7 @@ index b842885a6b..f80ed3a8e6 100644
          return gbpsLessThan(other);
      }
  
-@@ -184,10 +150,6 @@ class OutputConfiguration : public android::Parcelable {
+@@ -184,10 +150,6 @@ private:
      String16                   mPhysicalCameraId;
      bool                       mIsMultiResolution;
      std::vector<int32_t>       mSensorPixelModesUsed;
@@ -952,7 +958,7 @@ index b842885a6b..f80ed3a8e6 100644
  } // namespace params
  } // namespace camera2
 diff --git a/camera/ndk/impl/ACameraManager.h b/camera/ndk/impl/ACameraManager.h
-index d53d8099de..da887a26e0 100644
+index d53d809..da887a2 100644
 --- a/camera/ndk/impl/ACameraManager.h
 +++ b/camera/ndk/impl/ACameraManager.h
 @@ -95,9 +95,6 @@ class CameraManagerGlobal final : public RefBase {
@@ -966,7 +972,7 @@ index d53d8099de..da887a26e0 100644
          virtual binder::Status onCameraAccessPrioritiesChanged();
          virtual binder::Status onCameraOpened(const String16&, const String16&) {
 diff --git a/camera/ndk/include/camera/NdkCameraMetadataTags.h b/camera/ndk/include/camera/NdkCameraMetadataTags.h
-index b6f8552ae1..abc63acd97 100644
+index 0d156a5..abc63ac 100644
 --- a/camera/ndk/include/camera/NdkCameraMetadataTags.h
 +++ b/camera/ndk/include/camera/NdkCameraMetadataTags.h
 @@ -72,8 +72,6 @@ typedef enum acamera_metadata_section {
@@ -1098,7 +1104,30 @@ index b6f8552ae1..abc63acd97 100644
       * post RAW sensitivity boost.</p>
       * <p>This key will be <code>null</code> for devices that do not support any RAW format
       * outputs. For devices that do support RAW format outputs, this key will always
-@@ -2213,15 +2174,14 @@ typedef enum acamera_metadata_tag {
+@@ -2195,19 +2156,15 @@ typedef enum acamera_metadata_tag {
+      *
+      * <p>If this value is greater than 1, then the device supports controlling the
+      * flashlight brightness level via
+-     * <a href="https://developer.android.com/reference/android/hardware/camera2/CameraManager.html#turnOnTorchWithStrengthLevel">CameraManager#turnOnTorchWithStrengthLevel</a>.
++     * {android.hardware.camera2.CameraManager#setTorchStrengthLevel}.
+      * If this value is equal to 1, flashlight brightness control is not supported.
+-     * The value for this key will be null for devices with no flash unit.</p>
+-     * <p>The maximum value is guaranteed to be safe to use for an indefinite duration in
+-     * terms of device flashlight lifespan, but may be too bright for comfort for many
+-     * use cases. Use the default torch brightness value to avoid problems with an
+-     * over-bright flashlight.</p>
++     * This value will be -1 if the flash unit is not available.</p>
+      */
+     ACAMERA_FLASH_INFO_STRENGTH_MAXIMUM_LEVEL =                 // int32
+             ACAMERA_FLASH_INFO_START + 2,
+     /**
+      * <p>Default flashlight brightness level to be set via
+-     * <a href="https://developer.android.com/reference/android/hardware/camera2/CameraManager.html#turnOnTorchWithStrengthLevel">CameraManager#turnOnTorchWithStrengthLevel</a>.</p>
++     * {android.hardware.camera2.CameraManager#setTorchStrengthLevel}.</p>
+      *
+      * <p>Type: int32</p>
+      *
+@@ -2217,15 +2174,14 @@ typedef enum acamera_metadata_tag {
       * </ul></p>
       *
       * <p>If flash unit is available this will be greater than or equal to 1 and less
@@ -1117,7 +1146,7 @@ index b6f8552ae1..abc63acd97 100644
       *
       * @see ACAMERA_FLASH_INFO_STRENGTH_DEFAULT_LEVEL
       * @see ACAMERA_FLASH_INFO_STRENGTH_MAXIMUM_LEVEL
-@@ -2425,7 +2385,7 @@ typedef enum acamera_metadata_tag {
+@@ -2429,7 +2385,7 @@ typedef enum acamera_metadata_tag {
       *   and keep jpeg and thumbnail image data unrotated.</li>
       * <li>Rotate the jpeg and thumbnail image data and not set
       *   <a href="https://developer.android.com/reference/android/media/ExifInterface.html#TAG_ORIENTATION">EXIF orientation flag</a>. In this
@@ -1126,7 +1155,7 @@ index b6f8552ae1..abc63acd97 100644
       *   capture result, so the width and height will be interchanged if 90 or 270 degree
       *   orientation is requested. LEGACY device will always report unrotated thumbnail
       *   size.</li>
-@@ -2454,7 +2414,7 @@ typedef enum acamera_metadata_tag {
+@@ -2458,7 +2414,7 @@ typedef enum acamera_metadata_tag {
       *
       * <p>This list will include at least one non-zero resolution, plus <code>(0,0)</code> for indicating no
       * thumbnail should be generated.</p>
@@ -1135,7 +1164,7 @@ index b6f8552ae1..abc63acd97 100644
       * <ul>
       * <li>The sizes will be sorted by increasing pixel area (width x height).
       * If several resolutions have the same area, they will be sorted by increasing width.</li>
-@@ -2610,18 +2570,12 @@ typedef enum acamera_metadata_tag {
+@@ -2614,18 +2570,12 @@ typedef enum acamera_metadata_tag {
       * <p>If a camera device supports both OIS and digital image stabilization
       * (ACAMERA_CONTROL_VIDEO_STABILIZATION_MODE), turning both modes on may produce undesirable
       * interaction, so it is recommended not to enable both at the same time.</p>
@@ -1154,7 +1183,7 @@ index b6f8552ae1..abc63acd97 100644
       */
      ACAMERA_LENS_OPTICAL_STABILIZATION_MODE =                   // byte (acamera_metadata_enum_android_lens_optical_stabilization_mode_t)
              ACAMERA_LENS_START + 4,
-@@ -2724,9 +2678,6 @@ typedef enum acamera_metadata_tag {
+@@ -2728,9 +2678,6 @@ typedef enum acamera_metadata_tag {
       * with PRIMARY_CAMERA.</p>
       * <p>When ACAMERA_LENS_POSE_REFERENCE is UNDEFINED, this position cannot be accurately
       * represented by the camera device, and will be represented as <code>(0, 0, 0)</code>.</p>
@@ -1164,7 +1193,7 @@ index b6f8552ae1..abc63acd97 100644
       *
       * @see ACAMERA_LENS_DISTORTION
       * @see ACAMERA_LENS_INTRINSIC_CALIBRATION
-@@ -2768,7 +2719,7 @@ typedef enum acamera_metadata_tag {
+@@ -2772,7 +2719,7 @@ typedef enum acamera_metadata_tag {
       * <p>When the state is STATIONARY, the lens parameters are not changing. This could be
       * either because the parameters are all fixed, or because the lens has had enough
       * time to reach the most recently-requested values.
@@ -1173,7 +1202,7 @@ index b6f8552ae1..abc63acd97 100644
       * <ul>
       * <li>Fixed focus (<code>ACAMERA_LENS_INFO_MINIMUM_FOCUS_DISTANCE == 0</code>), which means
       * ACAMERA_LENS_FOCUS_DISTANCE parameter will always be 0.</li>
-@@ -3220,7 +3171,7 @@ typedef enum acamera_metadata_tag {
+@@ -3224,7 +3171,7 @@ typedef enum acamera_metadata_tag {
       * the camera device. Using more streams simultaneously may require more hardware and
       * CPU resources that will consume more power. The image format for an output stream can
       * be any supported format provided by ACAMERA_SCALER_AVAILABLE_STREAM_CONFIGURATIONS.
@@ -1182,7 +1211,7 @@ index b6f8552ae1..abc63acd97 100644
       * into the 3 stream types as below:</p>
       * <ul>
       * <li>Processed (but stalling): any non-RAW format with a stallDurations &gt; 0.
-@@ -3447,7 +3398,7 @@ typedef enum acamera_metadata_tag {
+@@ -3451,7 +3398,7 @@ typedef enum acamera_metadata_tag {
       * but clients should be aware and expect delays during their application.
       * An example usage scenario could look like this:</p>
       * <ul>
@@ -1191,7 +1220,7 @@ index b6f8552ae1..abc63acd97 100644
       *   {@link ACameraManager_getCameraCharacteristics }.</li>
       * <li>Before triggering the capture session create sequence, a capture request
       *   must be built via
-@@ -3486,36 +3437,16 @@ typedef enum acamera_metadata_tag {
+@@ -3490,36 +3437,16 @@ typedef enum acamera_metadata_tag {
       * </ul></p>
       *
       * <p>This is a subset of ACAMERA_REQUEST_AVAILABLE_REQUEST_KEYS which contains a list
@@ -1231,7 +1260,7 @@ index b6f8552ae1..abc63acd97 100644
      ACAMERA_REQUEST_END,
  
      /**
-@@ -3713,8 +3644,7 @@ typedef enum acamera_metadata_tag {
+@@ -3717,8 +3644,7 @@ typedef enum acamera_metadata_tag {
       * YUV_420_888    | all output sizes available for JPEG, up to the maximum video size | LIMITED        |
       * IMPLEMENTATION_DEFINED | same as YUV_420_888                  | Any            |</p>
       * <p>For applications targeting SDK version 31 or newer, if the mobile device declares to be
@@ -1241,7 +1270,7 @@ index b6f8552ae1..abc63acd97 100644
       * the primary camera devices (first rear/front camera in the camera ID list) will not
       * support JPEG sizes smaller than 1080p. If the application configures a JPEG stream
       * smaller than 1080p, the camera device will round up the JPEG image size to at least
-@@ -3732,11 +3662,9 @@ typedef enum acamera_metadata_tag {
+@@ -3736,11 +3662,9 @@ typedef enum acamera_metadata_tag {
       * YUV_420_888    | all output sizes available for FULL hardware level, up to the maximum video size | LIMITED        |
       * IMPLEMENTATION_DEFINED | same as YUV_420_888                  | Any            |</p>
       * <p>For applications targeting SDK version 31 or newer, if the mobile device doesn't declare
@@ -1256,7 +1285,7 @@ index b6f8552ae1..abc63acd97 100644
       * <p>Refer to ACAMERA_REQUEST_AVAILABLE_CAPABILITIES for additional
       * mandatory stream configurations on a per-capability basis.</p>
       * <p>Exception on 176x144 (QCIF) resolution: camera devices usually have a fixed capability for
-@@ -4227,70 +4155,19 @@ typedef enum acamera_metadata_tag {
+@@ -4231,70 +4155,19 @@ typedef enum acamera_metadata_tag {
       * to output different resolution images depending on the current active physical camera or
       * pixel mode. With multi-resolution input streams, the camera device can reprocess images
       * of different resolutions from different physical cameras or sensor pixel modes.</p>
@@ -1332,7 +1361,7 @@ index b6f8552ae1..abc63acd97 100644
      ACAMERA_SCALER_END,
  
      /**
-@@ -4844,7 +4721,7 @@ typedef enum acamera_metadata_tag {
+@@ -4848,7 +4721,7 @@ typedef enum acamera_metadata_tag {
       * noise model used here is:</p>
       * <p>N(x) = sqrt(Sx + O)</p>
       * <p>Where x represents the recorded signal of a CFA channel normalized to
@@ -1341,7 +1370,7 @@ index b6f8552ae1..abc63acd97 100644
       * that channel.</p>
       * <p>A more detailed description of the noise model can be found in the
       * Adobe DNG specification for the NoiseProfile tag.</p>
-@@ -4893,7 +4770,7 @@ typedef enum acamera_metadata_tag {
+@@ -4897,7 +4770,7 @@ typedef enum acamera_metadata_tag {
       * <li>1.20 &lt;= R &gt;= 1.03 will require some software
       * correction to avoid demosaic errors (3-20% divergence).</li>
       * <li>R &gt; 1.20 will require strong software correction to produce
@@ -1350,7 +1379,7 @@ index b6f8552ae1..abc63acd97 100644
       * </ul>
       * <p>Starting from Android Q, this key will not be present for a MONOCHROME camera, even if
       * the camera device has RAW capability.</p>
-@@ -5150,7 +5027,7 @@ typedef enum acamera_metadata_tag {
+@@ -5154,7 +5027,7 @@ typedef enum acamera_metadata_tag {
       *   <li>ACameraMetadata from ACameraCaptureSession_captureCallback_result callbacks</li>
       * </ul></p>
       *
@@ -1359,7 +1388,7 @@ index b6f8552ae1..abc63acd97 100644
       * <a href="https://developer.android.com/reference/android/hardware/camera2/CameraMetadata.html#REQUEST_AVAILABLE_CAPABILITIES_ULTRA_HIGH_RESOLUTION_SENSOR">CameraMetadata#REQUEST_AVAILABLE_CAPABILITIES_ULTRA_HIGH_RESOLUTION_SENSOR</a>
       * capability which also advertise <code>REMOSAIC_REPROCESSING</code> capability. On all other devices
       * RAW targets will have a regular bayer pattern.</p>
-@@ -6335,11 +6212,9 @@ typedef enum acamera_metadata_tag {
+@@ -6339,11 +6212,9 @@ typedef enum acamera_metadata_tag {
       *   <li>ACaptureRequest</li>
       * </ul></p>
       *
@@ -1374,7 +1403,7 @@ index b6f8552ae1..abc63acd97 100644
       * pow is the power function and gamma is the gamma value specified by this
       * key.</p>
       * <p>The same curve will be applied to all color channels. The camera device
-@@ -7237,87 +7112,6 @@ typedef enum acamera_metadata_tag {
+@@ -7241,87 +7112,6 @@ typedef enum acamera_metadata_tag {
              ACAMERA_HEIC_START + 5,
      ACAMERA_HEIC_END,
  
@@ -1462,7 +1491,7 @@ index b6f8552ae1..abc63acd97 100644
  } acamera_metadata_tag_t;
  
  /**
-@@ -8219,17 +8013,6 @@ typedef enum acamera_metadata_enum_acamera_control_video_stabilization_mode {
+@@ -8223,17 +8013,6 @@ typedef enum acamera_metadata_enum_acamera_control_video_stabilization_mode {
       */
      ACAMERA_CONTROL_VIDEO_STABILIZATION_MODE_ON                      = 1,
  
@@ -1480,7 +1509,7 @@ index b6f8552ae1..abc63acd97 100644
  } acamera_metadata_enum_android_control_video_stabilization_mode_t;
  
  // ACAMERA_CONTROL_AE_STATE
-@@ -8710,14 +8493,6 @@ typedef enum acamera_metadata_enum_acamera_lens_pose_reference {
+@@ -8714,14 +8493,6 @@ typedef enum acamera_metadata_enum_acamera_lens_pose_reference {
       */
      ACAMERA_LENS_POSE_REFERENCE_UNDEFINED                            = 2,
  
@@ -1495,7 +1524,7 @@ index b6f8552ae1..abc63acd97 100644
  } acamera_metadata_enum_android_lens_pose_reference_t;
  
  
-@@ -9031,7 +8806,7 @@ typedef enum acamera_metadata_enum_acamera_request_available_capabilities {
+@@ -9035,7 +8806,7 @@ typedef enum acamera_metadata_enum_acamera_request_available_capabilities {
       * for the largest YUV_420_888 size.</p>
       * <p>If the device supports the {@link AIMAGE_FORMAT_RAW10 }, {@link AIMAGE_FORMAT_RAW12 }, {@link AIMAGE_FORMAT_Y8 }, then those can also be
       * captured at the same rate as the maximum-size YUV_420_888 resolution is.</p>
@@ -1504,7 +1533,7 @@ index b6f8552ae1..abc63acd97 100644
       * and 4, inclusive. ACAMERA_CONTROL_AE_LOCK_AVAILABLE and ACAMERA_CONTROL_AWB_LOCK_AVAILABLE
       * are also guaranteed to be <code>true</code> so burst capture with these two locks ON yields
       * consistent image output.</p>
-@@ -9197,7 +8972,7 @@ typedef enum acamera_metadata_enum_acamera_request_available_capabilities {
+@@ -9201,7 +8972,7 @@ typedef enum acamera_metadata_enum_acamera_request_available_capabilities {
       * non-active physical cameras. For example, if the logical camera has a wide-ultrawide
       * configuration where the wide lens is the default, when the crop region is set to the
       * logical camera's active array size, (and the zoom ratio set to 1.0 starting from
@@ -1513,7 +1542,7 @@ index b6f8552ae1..abc63acd97 100644
       * with larger field-of-view than that of the wide camera for better stereo matching
       * margin or more robust motion tracking. At the same time, the physical non-RAW streams'
       * field of view must not be smaller than the requested crop region and zoom ratio, as
-@@ -9318,132 +9093,8 @@ typedef enum acamera_metadata_enum_acamera_request_available_capabilities {
+@@ -9322,132 +9093,8 @@ typedef enum acamera_metadata_enum_acamera_request_available_capabilities {
      ACAMERA_REQUEST_AVAILABLE_CAPABILITIES_ULTRA_HIGH_RESOLUTION_SENSOR
                                                                        = 16,
  
@@ -1646,11 +1675,10 @@ index b6f8552ae1..abc63acd97 100644
  
  // ACAMERA_SCALER_AVAILABLE_STREAM_CONFIGURATIONS
  typedef enum acamera_metadata_enum_acamera_scaler_available_stream_configurations {
-@@ -9534,20 +9185,6 @@ typedef enum acamera_metadata_enum_acamera_scaler_available_recommended_stream_c
-     ACAMERA_SCALER_AVAILABLE_RECOMMENDED_STREAM_CONFIGURATIONS_PUBLIC_END
+@@ -9539,20 +9186,6 @@ typedef enum acamera_metadata_enum_acamera_scaler_available_recommended_stream_c
                                                                        = 0x7,
  
--    /**
+     /**
 -     * <p>If supported, the recommended 10-bit output stream configurations must include
 -     * a subset of the advertised <a href="https://developer.android.com/reference/android/graphics/ImageFormat.html#YCBCR_P010">ImageFormat#YCBCR_P010</a> and
 -     * <a href="https://developer.android.com/reference/android/graphics/ImageFormat.html#PRIVATE">ImageFormat#PRIVATE</a> outputs that are optimized for power
@@ -1664,10 +1692,11 @@ index b6f8552ae1..abc63acd97 100644
 -    ACAMERA_SCALER_AVAILABLE_RECOMMENDED_STREAM_CONFIGURATIONS_PUBLIC_END_3_8
 -                                                                      = 0x9,
 -
-     /**
+-    /**
       * <p>Vendor defined use cases. These depend on the vendor implementation.</p>
       */
-@@ -9629,76 +9266,6 @@ typedef enum acamera_metadata_enum_acamera_scaler_multi_resolution_stream_suppor
+     ACAMERA_SCALER_AVAILABLE_RECOMMENDED_STREAM_CONFIGURATIONS_VENDOR_START
+@@ -9633,76 +9266,6 @@ typedef enum acamera_metadata_enum_acamera_scaler_multi_resolution_stream_suppor
  
  } acamera_metadata_enum_android_scaler_multi_resolution_stream_supported_t;
  
@@ -1744,7 +1773,7 @@ index b6f8552ae1..abc63acd97 100644
  
  // ACAMERA_SENSOR_REFERENCE_ILLUMINANT1
  typedef enum acamera_metadata_enum_acamera_sensor_reference_illuminant1 {
-@@ -10116,7 +9683,7 @@ typedef enum acamera_metadata_enum_acamera_tonemap_mode {
+@@ -10120,7 +9683,7 @@ typedef enum acamera_metadata_enum_acamera_tonemap_mode {
      ACAMERA_TONEMAP_MODE_HIGH_QUALITY                                = 2,
  
      /**
@@ -1753,7 +1782,7 @@ index b6f8552ae1..abc63acd97 100644
       * tonemapping.</p>
       * <p>All color enhancement and tonemapping must be disabled, except
       * for applying the tonemapping curve specified by ACAMERA_TONEMAP_GAMMA.</p>
-@@ -10128,7 +9695,7 @@ typedef enum acamera_metadata_enum_acamera_tonemap_mode {
+@@ -10132,7 +9695,7 @@ typedef enum acamera_metadata_enum_acamera_tonemap_mode {
  
      /**
       * <p>Use the preset tonemapping curve specified in
@@ -1762,7 +1791,7 @@ index b6f8552ae1..abc63acd97 100644
       * <p>All color enhancement and tonemapping must be disabled, except
       * for applying the tonemapping curve specified by
       * ACAMERA_TONEMAP_PRESET_CURVE.</p>
-@@ -10226,7 +9793,7 @@ typedef enum acamera_metadata_enum_acamera_info_supported_hardware_level {
+@@ -10230,7 +9793,7 @@ typedef enum acamera_metadata_enum_acamera_info_supported_hardware_level {
       * fire the flash for flash power metering during precapture, and then fire the flash
       * for the final capture, if a flash is available on the device and the AE mode is set to
       * enable the flash.</p>
@@ -1771,7 +1800,7 @@ index b6f8552ae1..abc63acd97 100644
       *
       * @see ACAMERA_CONTROL_AE_PRECAPTURE_TRIGGER
       * @see ACAMERA_REQUEST_AVAILABLE_CAPABILITIES
-@@ -10460,167 +10027,6 @@ typedef enum acamera_metadata_enum_acamera_heic_available_heic_stream_configurat
+@@ -10464,167 +10027,6 @@ typedef enum acamera_metadata_enum_acamera_heic_available_heic_stream_configurat
  
  
  
@@ -1940,7 +1969,7 @@ index b6f8552ae1..abc63acd97 100644
  __END_DECLS
  
 diff --git a/camera/ndk/ndk_vendor/impl/ACameraDevice.cpp b/camera/ndk/ndk_vendor/impl/ACameraDevice.cpp
-index 0a57590f8d..4cc1292a9b 100644
+index 0a57590..4cc1292 100644
 --- a/camera/ndk/ndk_vendor/impl/ACameraDevice.cpp
 +++ b/camera/ndk/ndk_vendor/impl/ACameraDevice.cpp
 @@ -330,8 +330,7 @@ camera_status_t CameraDevice::updateOutputConfigurationLocked(ACaptureSessionOut
@@ -2020,7 +2049,7 @@ index 0a57590f8d..4cc1292a9b 100644
                              getId(), anw, frameNumber);
  
 diff --git a/camera/ndk/ndk_vendor/impl/utils.h b/camera/ndk/ndk_vendor/impl/utils.h
-index 62779a4b02..6f5820ecee 100644
+index 62779a4..6f5820e 100644
 --- a/camera/ndk/ndk_vendor/impl/utils.h
 +++ b/camera/ndk/ndk_vendor/impl/utils.h
 @@ -109,30 +109,8 @@ struct OutputConfigurationWrapper {
@@ -2057,10 +2086,10 @@ index 62779a4b02..6f5820ecee 100644
      bool operator ==(const OutputConfiguration &other) const {
          const OutputConfiguration &self = mOutputConfiguration;
 diff --git a/camera/tests/CameraBinderTests.cpp b/camera/tests/CameraBinderTests.cpp
-index 17ea51270c..9f2f430f62 100644
+index 17ea512..9f2f430 100644
 --- a/camera/tests/CameraBinderTests.cpp
 +++ b/camera/tests/CameraBinderTests.cpp
-@@ -96,12 +96,6 @@ class TestCameraServiceListener : public hardware::BnCameraServiceListener {
+@@ -96,12 +96,6 @@ public:
          return binder::Status::ok();
      };
  
@@ -2074,7 +2103,7 @@ index 17ea51270c..9f2f430f62 100644
          // No op
          return binder::Status::ok();
 diff --git a/media/ndk/NdkImage.cpp b/media/ndk/NdkImage.cpp
-index 12a0d53f7c..e9fe7615be 100644
+index c46a692..1c6e4bf 100644
 --- a/media/ndk/NdkImage.cpp
 +++ b/media/ndk/NdkImage.cpp
 @@ -25,6 +25,7 @@
@@ -2085,7 +2114,7 @@ index 12a0d53f7c..e9fe7615be 100644
  
  using namespace android;
  
-@@ -374,9 +375,9 @@ AImage::getJpegSize() const {
+@@ -388,9 +389,9 @@ AImage::getJpegSize() const {
      uint8_t* jpegBuffer = mLockedBuffer->data;
  
      // First check for JPEG transport header at the end of the buffer
@@ -2099,7 +2128,7 @@ index 12a0d53f7c..e9fe7615be 100644
          ALOGV("%s: Jpeg size = %d", __FUNCTION__, size);
      }
 diff --git a/services/camera/libcameraservice/Android.bp b/services/camera/libcameraservice/Android.bp
-index 981c56942c..999e6e6594 100644
+index 981c569..999e6e6 100644
 --- a/services/camera/libcameraservice/Android.bp
 +++ b/services/camera/libcameraservice/Android.bp
 @@ -42,15 +42,13 @@ cc_library_shared {
@@ -2245,7 +2274,7 @@ index 981c56942c..999e6e6594 100644
  
      include_dirs: [
 diff --git a/services/camera/libcameraservice/CameraFlashlight.cpp b/services/camera/libcameraservice/CameraFlashlight.cpp
-index ffd38be509..ccdd9e5c62 100644
+index ffd38be..ccdd9e5 100644
 --- a/services/camera/libcameraservice/CameraFlashlight.cpp
 +++ b/services/camera/libcameraservice/CameraFlashlight.cpp
 @@ -32,6 +32,8 @@
@@ -2341,7 +2370,7 @@ index ffd38be509..ccdd9e5c62 100644
  
  }
 diff --git a/services/camera/libcameraservice/CameraFlashlight.h b/services/camera/libcameraservice/CameraFlashlight.h
-index 1703ddc4bb..b97fa5f340 100644
+index 1703ddc..b97fa5f 100644
 --- a/services/camera/libcameraservice/CameraFlashlight.h
 +++ b/services/camera/libcameraservice/CameraFlashlight.h
 @@ -44,14 +44,6 @@ class FlashControlBase : public virtual VirtualLightRefBase {
@@ -2382,7 +2411,7 @@ index 1703ddc4bb..b97fa5f340 100644
      private:
          sp<CameraProviderManager> mProviderManager;
 diff --git a/services/camera/libcameraservice/CameraService.cpp b/services/camera/libcameraservice/CameraService.cpp
-index 80410ab463..71262cef67 100644
+index e31cf74..2b6a6b6 100644
 --- a/services/camera/libcameraservice/CameraService.cpp
 +++ b/services/camera/libcameraservice/CameraService.cpp
 @@ -86,13 +86,13 @@ namespace android {
@@ -2787,7 +2816,7 @@ index 80410ab463..71262cef67 100644
      }
  
      if (oomScoreOffset < 0) {
-@@ -1717,7 +1655,7 @@ Status CameraService::connectDevice(
+@@ -1723,7 +1661,7 @@ Status CameraService::connectDevice(
      }
  
      ret = connectHelper<hardware::camera2::ICameraDeviceCallbacks,CameraDeviceClient>(cameraCb, id,
@@ -2796,25 +2825,25 @@ index 80410ab463..71262cef67 100644
              clientUid, USE_CALLING_PID, API_2, /*shimUpdateOnly*/ false, oomScoreOffset,
              targetSdkVersion, /*out*/client);
  
-@@ -1748,7 +1686,7 @@ Status CameraService::connectDevice(
+@@ -1784,7 +1722,7 @@ String16 CameraService::getPackageNameFromUid(int clientUid) {
  
  template<class CALLBACK, class CLIENT>
  Status CameraService::connectHelper(const sp<CALLBACK>& cameraCb, const String8& cameraId,
--        int api1CameraId, const String16& clientPackageName, bool systemNativeClient,
-+        int api1CameraId, const String16& clientPackageName,
+-        int api1CameraId, const String16& clientPackageNameMaybe, bool systemNativeClient,
++        int api1CameraId, const String16& clientPackageNameMaybe,
          const std::optional<String16>& clientFeatureId, int clientUid, int clientPid,
          apiLevel effectiveApiLevel, bool shimUpdateOnly, int oomScoreOffset, int targetSdkVersion,
          /*out*/sp<CLIENT>& device) {
-@@ -1767,7 +1705,7 @@ Status CameraService::connectHelper(const sp<CALLBACK>& cameraCb, const String8&
+@@ -1821,7 +1759,7 @@ Status CameraService::connectHelper(const sp<CALLBACK>& cameraCb, const String8&
      sp<CLIENT> client = nullptr;
      int facing = -1;
      int orientation = 0;
--    bool isNonSystemNdk = (clientPackageName.size() == 0);
+-
 +    bool isNdk = (clientPackageName.size() == 0);
      {
          // Acquire mServiceLock and prevent other clients from connecting
          std::unique_ptr<AutoConditionLock> lock =
-@@ -1801,8 +1739,8 @@ Status CameraService::connectHelper(const sp<CALLBACK>& cameraCb, const String8&
+@@ -1855,8 +1793,8 @@ Status CameraService::connectHelper(const sp<CALLBACK>& cameraCb, const String8&
          sp<BasicClient> clientTmp = nullptr;
          std::shared_ptr<resource_policy::ClientDescriptor<String8, sp<BasicClient>>> partial;
          if ((err = handleEvictionsLocked(cameraId, originalClientPid, effectiveApiLevel,
@@ -2825,7 +2854,7 @@ index 80410ab463..71262cef67 100644
              switch (err) {
                  case -ENODEV:
                      return STATUS_ERROR_FMT(ERROR_DISCONNECTED,
-@@ -1832,8 +1770,7 @@ Status CameraService::connectHelper(const sp<CALLBACK>& cameraCb, const String8&
+@@ -1886,8 +1824,7 @@ Status CameraService::connectHelper(const sp<CALLBACK>& cameraCb, const String8&
          // give flashlight a chance to close devices if necessary.
          mFlashlight->prepareDeviceOpen(cameraId);
  
@@ -2835,7 +2864,7 @@ index 80410ab463..71262cef67 100644
          if (facing == -1) {
              ALOGE("%s: Unable to get camera device \"%s\"  facing", __FUNCTION__, cameraId.string());
              return STATUS_ERROR_FMT(ERROR_INVALID_OPERATION,
-@@ -1843,10 +1780,10 @@ Status CameraService::connectHelper(const sp<CALLBACK>& cameraCb, const String8&
+@@ -1897,10 +1834,10 @@ Status CameraService::connectHelper(const sp<CALLBACK>& cameraCb, const String8&
          sp<BasicClient> tmp = nullptr;
          bool overrideForPerfClass = SessionConfigurationUtils::targetPerfClassPrimaryCamera(
                  mPerfClassPrimaryCameraIds, cameraId.string(), targetSdkVersion);
@@ -2849,7 +2878,7 @@ index 80410ab463..71262cef67 100644
                  /*out*/&tmp)).isOk()) {
              return ret;
          }
-@@ -1904,7 +1841,8 @@ Status CameraService::connectHelper(const sp<CALLBACK>& cameraCb, const String8&
+@@ -1958,7 +1895,8 @@ Status CameraService::connectHelper(const sp<CALLBACK>& cameraCb, const String8&
          // Set rotate-and-crop override behavior
          if (mOverrideRotateAndCropMode != ANDROID_SCALER_ROTATE_AND_CROP_AUTO) {
              client->setRotateAndCropOverride(mOverrideRotateAndCropMode);
@@ -2859,7 +2888,7 @@ index 80410ab463..71262cef67 100644
            client->setRotateAndCropOverride(
                CameraServiceProxyWrapper::getRotateAndCropOverride(
                    clientPackageName, facing, multiuser_get_user_id(clientUid)));
-@@ -1945,7 +1883,7 @@ Status CameraService::connectHelper(const sp<CALLBACK>& cameraCb, const String8&
+@@ -1999,7 +1937,7 @@ Status CameraService::connectHelper(const sp<CALLBACK>& cameraCb, const String8&
              mServiceLock.lock();
          } else {
              // Otherwise, add client to active clients list
@@ -2868,7 +2897,7 @@ index 80410ab463..71262cef67 100644
          }
  
          client->setImageDumpMask(mImageDumpMask);
-@@ -1957,34 +1895,7 @@ Status CameraService::connectHelper(const sp<CALLBACK>& cameraCb, const String8&
+@@ -2011,34 +1949,7 @@ Status CameraService::connectHelper(const sp<CALLBACK>& cameraCb, const String8&
  
      int32_t openLatencyMs = ns2ms(systemTime() - openTimeNs);
      CameraServiceProxyWrapper::logOpen(cameraId, facing, clientPackageName,
@@ -2904,7 +2933,7 @@ index 80410ab463..71262cef67 100644
  
      return ret;
  }
-@@ -2020,8 +1931,7 @@ status_t CameraService::addOfflineClient(String8 cameraId, sp<BasicClient> offli
+@@ -2074,8 +1985,7 @@ status_t CameraService::addOfflineClient(String8 cameraId, sp<BasicClient> offli
                  kOfflineDevice + onlineClientDesc->getKey(), offlineClient, /*cost*/ 0,
                  /*conflictingKeys*/ std::set<String8>(), onlinePriority.getScore(),
                  onlineClientDesc->getOwnerId(), onlinePriority.getState(),
@@ -2914,7 +2943,7 @@ index 80410ab463..71262cef67 100644
  
          // Allow only one offline device per camera
          auto incompatibleClients = mActiveClientManager.getIncompatibleClients(offlineClientDesc);
-@@ -2063,136 +1973,6 @@ status_t CameraService::addOfflineClient(String8 cameraId, sp<BasicClient> offli
+@@ -2117,136 +2027,6 @@ status_t CameraService::addOfflineClient(String8 cameraId, sp<BasicClient> offli
      return OK;
  }
  
@@ -3051,7 +3080,7 @@ index 80410ab463..71262cef67 100644
  Status CameraService::setTorchMode(const String16& cameraId, bool enabled,
          const sp<IBinder>& clientBinder) {
      Mutex::Autolock lock(mServiceLock);
-@@ -2264,7 +2044,13 @@ Status CameraService::setTorchMode(const String16& cameraId, bool enabled,
+@@ -2318,7 +2098,13 @@ Status CameraService::setTorchMode(const String16& cameraId, bool enabled,
          // Update UID map - this is used in the torch status changed callbacks, so must be done
          // before setTorchMode
          Mutex::Autolock al(mTorchUidMapMutex);
@@ -3066,7 +3095,7 @@ index 80410ab463..71262cef67 100644
      }
  
      status_t err = mFlashlight->setTorchMode(id, enabled);
-@@ -2319,17 +2105,6 @@ Status CameraService::setTorchMode(const String16& cameraId, bool enabled,
+@@ -2373,17 +2159,6 @@ Status CameraService::setTorchMode(const String16& cameraId, bool enabled,
      return Status::ok();
  }
  
@@ -3084,7 +3113,7 @@ index 80410ab463..71262cef67 100644
  Status CameraService::notifySystemEvent(int32_t eventId,
          const std::vector<int32_t>& args) {
      const int pid = CameraThreadState::getCallingPid();
-@@ -2360,13 +2135,6 @@ Status CameraService::notifySystemEvent(int32_t eventId,
+@@ -2414,13 +2189,6 @@ Status CameraService::notifySystemEvent(int32_t eventId,
              doUserSwitch(/*newUserIds*/ args);
              break;
          }
@@ -3098,7 +3127,7 @@ index 80410ab463..71262cef67 100644
          case ICameraService::EVENT_NONE:
          default: {
              ALOGW("%s: Received invalid system event from system_server: %d", __FUNCTION__,
-@@ -2409,7 +2177,23 @@ Status CameraService::notifyDeviceStateChange(int64_t newState) {
+@@ -2463,7 +2231,23 @@ Status CameraService::notifyDeviceStateChange(int64_t newState) {
  
      ATRACE_CALL();
  
@@ -3123,7 +3152,7 @@ index 80410ab463..71262cef67 100644
  
      return Status::ok();
  }
-@@ -2442,7 +2226,7 @@ Status CameraService::notifyDisplayConfigurationChange() {
+@@ -2496,7 +2280,7 @@ Status CameraService::notifyDisplayConfigurationChange() {
      for (auto& current : clients) {
          if (current != nullptr) {
              const auto basicClient = current->getValue();
@@ -3132,7 +3161,7 @@ index 80410ab463..71262cef67 100644
                basicClient->setRotateAndCropOverride(
                    CameraServiceProxyWrapper::getRotateAndCropOverride(
                        basicClient->getPackageName(),
-@@ -2719,48 +2503,44 @@ Status CameraService::supportsCameraApi(const String16& cameraId, int apiVersion
+@@ -2773,48 +2557,44 @@ Status CameraService::supportsCameraApi(const String16& cameraId, int apiVersion
              return STATUS_ERROR(ERROR_ILLEGAL_ARGUMENT, msg.string());
      }
  
@@ -3214,7 +3243,7 @@ index 80410ab463..71262cef67 100644
      return Status::ok();
  }
  
-@@ -2776,60 +2556,6 @@ Status CameraService::isHiddenPhysicalCamera(const String16& cameraId,
+@@ -2830,60 +2610,6 @@ Status CameraService::isHiddenPhysicalCamera(const String16& cameraId,
      return Status::ok();
  }
  
@@ -3275,7 +3304,7 @@ index 80410ab463..71262cef67 100644
  void CameraService::removeByClient(const BasicClient* client) {
      Mutex::Autolock lock(mServiceLock);
      for (auto& i : mActiveClientManager.getAll()) {
-@@ -3199,7 +2925,7 @@ void CameraService::playSound(sound_kind kind) {
+@@ -3253,7 +2979,7 @@ void CameraService::playSound(sound_kind kind) {
  
  CameraService::Client::Client(const sp<CameraService>& cameraService,
          const sp<ICameraClient>& cameraClient,
@@ -3284,7 +3313,7 @@ index 80410ab463..71262cef67 100644
          const std::optional<String16>& clientFeatureId,
          const String8& cameraIdStr,
          int api1CameraId, int cameraFacing, int sensorOrientation,
-@@ -3207,7 +2933,7 @@ CameraService::Client::Client(const sp<CameraService>& cameraService,
+@@ -3261,7 +2987,7 @@ CameraService::Client::Client(const sp<CameraService>& cameraService,
          int servicePid) :
          CameraService::BasicClient(cameraService,
                  IInterface::asBinder(cameraClient),
@@ -3293,7 +3322,7 @@ index 80410ab463..71262cef67 100644
                  cameraIdStr, cameraFacing, sensorOrientation,
                  clientPid, clientUid,
                  servicePid),
-@@ -3237,14 +2963,13 @@ sp<CameraService> CameraService::BasicClient::BasicClient::sCameraService;
+@@ -3291,14 +3017,13 @@ sp<CameraService> CameraService::BasicClient::BasicClient::sCameraService;
  
  CameraService::BasicClient::BasicClient(const sp<CameraService>& cameraService,
          const sp<IBinder>& remoteCallback,
@@ -3312,28 +3341,16 @@ index 80410ab463..71262cef67 100644
          mClientPid(clientPid), mClientUid(clientUid),
          mServicePid(servicePid),
          mDisconnected(false), mUidIsTrusted(false),
-@@ -3287,19 +3012,7 @@ CameraService::BasicClient::BasicClient(const sp<CameraService>& cameraService,
-         }
-         mClientPackageName = packages[0];
-     }
--
--    // There are 2 scenarios in which a client won't have AppOps operations
--    // (both scenarios : native clients)
--    //    1) It's an system native client*, the package name will be empty
--    //       and it will return from this function in the previous if condition
--    //       (This is the same as the previously existing behavior).
--    //    2) It is a system native client, but its package name has been
--    //       modified for debugging, however it still must not use AppOps since
--    //       the package name is not a real one.
--    //
--    //       * system native client - native client with UID < AID_APP_START. It
--    //         doesn't exclude clients not on the system partition.
+@@ -3322,7 +3047,7 @@ CameraService::BasicClient::BasicClient(const sp<CameraService>& cameraService,
+     //
+     //       * system native client - native client with UID < AID_APP_START. It
+     //         doesn't exclude clients not on the system partition.
 -    if (!mSystemNativeClient) {
 +    if (getCurrentServingCall() != BinderCallType::HWBINDER) {
          mAppOpsManager = std::make_unique<AppOpsManager>();
      }
  
-@@ -3983,10 +3696,9 @@ bool CameraService::SensorPrivacyPolicy::hasCameraPrivacyFeature() {
+@@ -4006,10 +3731,9 @@ bool CameraService::SensorPrivacyPolicy::hasCameraPrivacyFeature() {
  // ----------------------------------------------------------------------------
  
  CameraService::CameraState::CameraState(const String8& id, int cost,
@@ -3346,7 +3363,7 @@ index 80410ab463..71262cef67 100644
  
  CameraService::CameraState::~CameraState() {}
  
-@@ -4025,11 +3737,6 @@ SystemCameraKind CameraService::CameraState::getSystemCameraKind() const {
+@@ -4048,11 +3772,6 @@ SystemCameraKind CameraService::CameraState::getSystemCameraKind() const {
      return mSystemCameraKind;
  }
  
@@ -3358,7 +3375,7 @@ index 80410ab463..71262cef67 100644
  bool CameraService::CameraState::addUnavailablePhysicalId(const String8& physicalId) {
      Mutex::Autolock lock(mStatusLock);
      auto result = mUnavailablePhysicalIds.insert(physicalId);
-@@ -4142,140 +3849,25 @@ String8 CameraService::CameraClientManager::toString() const {
+@@ -4165,140 +3884,25 @@ String8 CameraService::CameraClientManager::toString() const {
  CameraService::DescriptorPtr CameraService::CameraClientManager::makeClientDescriptor(
          const String8& key, const sp<BasicClient>& value, int32_t cost,
          const std::set<String8>& conflictingKeys, int32_t score, int32_t ownerId,
@@ -3507,7 +3524,7 @@ index 80410ab463..71262cef67 100644
  static const int kDumpLockRetries = 50;
  static const int kDumpLockSleep = 60000;
  
-@@ -4515,20 +4107,12 @@ void CameraService::cacheClientTagDumpIfNeeded(const char *cameraId, BasicClient
+@@ -4538,20 +4142,12 @@ void CameraService::cacheClientTagDumpIfNeeded(const char *cameraId, BasicClient
  
      if (dumpVector.empty()) { return; }
  
@@ -3529,7 +3546,7 @@ index 80410ab463..71262cef67 100644
      size_t i = dumpVector.size();
  
      // Store the string in reverse order (latest last)
-@@ -4763,9 +4347,18 @@ std::list<String16> CameraService::getLogicalCameras(
+@@ -4786,9 +4382,18 @@ std::list<String16> CameraService::getLogicalCameras(
      std::list<String16> retList;
      Mutex::Autolock lock(mCameraStatesLock);
      for (const auto& state : mCameraStates) {
@@ -3550,7 +3567,7 @@ index 80410ab463..71262cef67 100644
      }
      return retList;
  }
-@@ -5377,43 +4970,4 @@ int32_t CameraService::updateAudioRestrictionLocked() {
+@@ -5400,43 +5005,4 @@ int32_t CameraService::updateAudioRestrictionLocked() {
      return mode;
  }
  
@@ -3595,7 +3612,7 @@ index 80410ab463..71262cef67 100644
 -
  }; // namespace android
 diff --git a/services/camera/libcameraservice/CameraService.h b/services/camera/libcameraservice/CameraService.h
-index d96ea008bc..49141647a7 100644
+index 28c5927..5a2bdeb 100644
 --- a/services/camera/libcameraservice/CameraService.h
 +++ b/services/camera/libcameraservice/CameraService.h
 @@ -20,8 +20,6 @@
@@ -3615,7 +3632,7 @@ index d96ea008bc..49141647a7 100644
  
  #include <set>
  #include <string>
-@@ -107,20 +104,12 @@ class CameraService :
+@@ -107,20 +104,12 @@ public:
      // HAL Callbacks - implements CameraProviderManager::StatusListener
  
      virtual void        onDeviceStatusChanged(const String8 &cameraId,
@@ -3639,7 +3656,7 @@ index d96ea008bc..49141647a7 100644
      virtual void        onNewProviderRegistered() override;
  
      /////////////////////////////////////////////////////////////////////
-@@ -173,12 +162,6 @@ class CameraService :
+@@ -173,12 +162,6 @@ public:
      virtual binder::Status    setTorchMode(const String16& cameraId, bool enabled,
              const sp<IBinder>& clientBinder);
  
@@ -3652,7 +3669,7 @@ index d96ea008bc..49141647a7 100644
      virtual binder::Status    notifySystemEvent(int32_t eventId,
              const std::vector<int32_t>& args);
  
-@@ -197,13 +180,6 @@ class CameraService :
+@@ -197,13 +180,6 @@ public:
              /*out*/
              bool *isSupported);
  
@@ -3666,7 +3683,7 @@ index d96ea008bc..49141647a7 100644
      // Extra permissions checks
      virtual status_t    onTransact(uint32_t code, const Parcel& data,
                                     Parcel* reply, uint32_t flags);
-@@ -243,7 +219,7 @@ class CameraService :
+@@ -243,7 +219,7 @@ public:
  
      /////////////////////////////////////////////////////////////////////
      // CameraDeviceFactory functionality
@@ -3675,7 +3692,7 @@ index d96ea008bc..49141647a7 100644
              int* orientation = nullptr);
  
      /////////////////////////////////////////////////////////////////////
-@@ -339,19 +315,10 @@ class CameraService :
+@@ -339,19 +315,10 @@ public:
          // Set/reset camera mute
          virtual status_t setCameraMute(bool enabled) = 0;
  
@@ -3695,7 +3712,7 @@ index d96ea008bc..49141647a7 100644
                  const std::optional<String16>& clientFeatureId,
                  const String8& cameraIdStr,
                  int cameraFacing,
-@@ -374,7 +341,6 @@ class CameraService :
+@@ -374,7 +341,6 @@ public:
          const int                       mCameraFacing;
          const int                       mOrientation;
          String16                        mClientPackageName;
@@ -3703,7 +3720,7 @@ index d96ea008bc..49141647a7 100644
          std::optional<String16>         mClientFeatureId;
          pid_t                           mClientPid;
          const uid_t                     mClientUid;
-@@ -462,7 +428,6 @@ class CameraService :
+@@ -462,7 +428,6 @@ public:
          Client(const sp<CameraService>& cameraService,
                  const sp<hardware::ICameraClient>& cameraClient,
                  const String16& clientPackageName,
@@ -3711,7 +3728,7 @@ index d96ea008bc..49141647a7 100644
                  const std::optional<String16>& clientFeatureId,
                  const String8& cameraIdStr,
                  int api1CameraId,
-@@ -546,15 +511,14 @@ class CameraService :
+@@ -546,15 +511,14 @@ public:
           */
          static DescriptorPtr makeClientDescriptor(const String8& key, const sp<BasicClient>& value,
                  int32_t cost, const std::set<String8>& conflictingKeys, int32_t score,
@@ -3729,7 +3746,7 @@ index d96ea008bc..49141647a7 100644
  
      }; // class CameraClientManager
  
-@@ -563,6 +527,8 @@ class CameraService :
+@@ -563,6 +527,8 @@ public:
  
  private:
  
@@ -3738,7 +3755,7 @@ index d96ea008bc..49141647a7 100644
      /**
       * Typesafe version of device status, containing both the HAL-layer and the service interface-
       * layer values.
-@@ -592,7 +558,7 @@ class CameraService :
+@@ -592,7 +558,7 @@ private:
           * returned in the HAL's camera_info struct for each device.
           */
          CameraState(const String8& id, int cost, const std::set<String8>& conflicting,
@@ -3747,20 +3764,20 @@ index d96ea008bc..49141647a7 100644
          virtual ~CameraState();
  
          /**
-@@ -649,12 +615,6 @@ class CameraService :
-          */
+@@ -650,12 +616,6 @@ private:
          SystemCameraKind getSystemCameraKind() const;
  
--        /**
+         /**
 -         * Return whether this camera is a logical multi-camera and has a
 -         * particular physical sub-camera.
 -         */
 -        bool containsPhysicalCamera(const std::string& physicalCameraId) const;
 -
-         /**
+-        /**
           * Add/Remove the unavailable physical camera ID.
           */
-@@ -683,7 +643,6 @@ class CameraService :
+         bool addUnavailablePhysicalId(const String8& physicalId);
+@@ -683,7 +643,6 @@ private:
          mutable Mutex mStatusLock;
          CameraParameters mShimParams;
          const SystemCameraKind mSystemCameraKind;
@@ -3768,7 +3785,7 @@ index d96ea008bc..49141647a7 100644
      }; // class CameraState
  
      // Observer for UID lifecycle enforcing that UIDs in idle
-@@ -796,7 +755,7 @@ class CameraService :
+@@ -796,7 +755,7 @@ private:
      // Only call with with mServiceLock held.
      status_t handleEvictionsLocked(const String8& cameraId, int clientPid,
          apiLevel effectiveApiLevel, const sp<IBinder>& remoteCallback, const String8& packageName,
@@ -3777,16 +3794,16 @@ index d96ea008bc..49141647a7 100644
          /*out*/
          sp<BasicClient>* client,
          std::shared_ptr<resource_policy::ClientDescriptor<String8, sp<BasicClient>>>* partial);
-@@ -828,7 +787,7 @@ class CameraService :
+@@ -837,7 +796,7 @@ private:
      // Single implementation shared between the various connect calls
      template<class CALLBACK, class CLIENT>
      binder::Status connectHelper(const sp<CALLBACK>& cameraCb, const String8& cameraId,
--            int api1CameraId, const String16& clientPackageName, bool systemNativeClient,
-+            int api1CameraId, const String16& clientPackageName,
+-            int api1CameraId, const String16& clientPackageNameMaybe, bool systemNativeClient,
++            int api1CameraId, const String16& clientPackageNameMaybe,
              const std::optional<String16>& clientFeatureId, int clientUid, int clientPid,
              apiLevel effectiveApiLevel, bool shimUpdateOnly, int scoreOffset, int targetSdkVersion,
              /*out*/sp<CLIENT>& device);
-@@ -905,7 +864,7 @@ class CameraService :
+@@ -914,7 +873,7 @@ private:
       * This method must be called with mServiceLock held.
       */
      void finishConnectLocked(const sp<BasicClient>& client, const DescriptorPtr& desc,
@@ -3795,7 +3812,7 @@ index d96ea008bc..49141647a7 100644
  
      /**
       * Returns the underlying camera Id string mapped to a camera id int
-@@ -1113,7 +1072,7 @@ class CameraService :
+@@ -1122,7 +1081,7 @@ private:
      // guard mTorchUidMap
      Mutex                mTorchUidMapMutex;
      // camera id -> torch status
@@ -3804,7 +3821,7 @@ index d96ea008bc..49141647a7 100644
              mTorchStatusMap;
      // camera id -> torch client binder
      // only store the last client that turns on each camera's torch mode
-@@ -1127,16 +1086,16 @@ class CameraService :
+@@ -1136,16 +1095,16 @@ private:
      // handle torch mode status change and invoke callbacks. mTorchStatusMutex
      // should be locked.
      void onTorchStatusChangedLocked(const String8& cameraId,
@@ -3824,7 +3841,7 @@ index d96ea008bc..49141647a7 100644
  
      // notify physical camera status when the physical camera is public.
      // Expects mStatusListenerLock to be locked.
-@@ -1239,24 +1198,22 @@ class CameraService :
+@@ -1248,24 +1207,22 @@ private:
  
      static binder::Status makeClient(const sp<CameraService>& cameraService,
              const sp<IInterface>& cameraCb, const String16& packageName,
@@ -3857,7 +3874,7 @@ index d96ea008bc..49141647a7 100644
  
      void disconnectClient(const String8& id, sp<BasicClient> clientToDisconnect);
  
-@@ -1283,61 +1240,6 @@ class CameraService :
+@@ -1292,61 +1249,6 @@ private:
  
      // Current camera mute mode
      bool mOverrideCameraMuteMode = false;
@@ -3921,7 +3938,7 @@ index d96ea008bc..49141647a7 100644
  } // namespace android
 diff --git a/services/camera/libcameraservice/CameraServiceWatchdog.cpp b/services/camera/libcameraservice/CameraServiceWatchdog.cpp
 deleted file mode 100644
-index a1696678c0..0000000000
+index a169667..0000000
 --- a/services/camera/libcameraservice/CameraServiceWatchdog.cpp
 +++ /dev/null
 @@ -1,92 +0,0 @@
@@ -4019,7 +4036,7 @@ index a1696678c0..0000000000
 -}   // namespace android
 diff --git a/services/camera/libcameraservice/CameraServiceWatchdog.h b/services/camera/libcameraservice/CameraServiceWatchdog.h
 deleted file mode 100644
-index f4955e2d15..0000000000
+index f4955e2..0000000
 --- a/services/camera/libcameraservice/CameraServiceWatchdog.h
 +++ /dev/null
 @@ -1,121 +0,0 @@
@@ -4145,7 +4162,7 @@ index f4955e2d15..0000000000
 -
 -}   // namespace android
 diff --git a/services/camera/libcameraservice/api1/Camera2Client.cpp b/services/camera/libcameraservice/api1/Camera2Client.cpp
-index 68dc7f8900..8c72bd7213 100644
+index 68dc7f8..8c72bd7 100644
 --- a/services/camera/libcameraservice/api1/Camera2Client.cpp
 +++ b/services/camera/libcameraservice/api1/Camera2Client.cpp
 @@ -22,7 +22,6 @@
@@ -4243,10 +4260,10 @@ index 68dc7f8900..8c72bd7213 100644
          static_cast<camera_metadata_enum_android_scaler_rotate_and_crop_t>(rotateAndCrop));
  }
 diff --git a/services/camera/libcameraservice/api1/Camera2Client.h b/services/camera/libcameraservice/api1/Camera2Client.h
-index c8dfc46625..64ab8ff7c2 100644
+index c8dfc46..64ab8ff 100644
 --- a/services/camera/libcameraservice/api1/Camera2Client.h
 +++ b/services/camera/libcameraservice/api1/Camera2Client.h
-@@ -238,15 +238,6 @@ class Camera2Client :
+@@ -238,15 +238,6 @@ private:
      status_t initializeImpl(TProviderPtr providerPtr, const String8& monitorTags);
  
      bool isZslEnabledInStillTemplate();
@@ -4263,7 +4280,7 @@ index c8dfc46625..64ab8ff7c2 100644
      mutable Mutex mLatestRequestMutex;
      Condition mLatestRequestSignal;
 diff --git a/services/camera/libcameraservice/api1/client2/JpegProcessor.cpp b/services/camera/libcameraservice/api1/client2/JpegProcessor.cpp
-index 467108dcc1..eed2654476 100755
+index 467108d..eed2654 100755
 --- a/services/camera/libcameraservice/api1/client2/JpegProcessor.cpp
 +++ b/services/camera/libcameraservice/api1/client2/JpegProcessor.cpp
 @@ -20,9 +20,6 @@
@@ -4313,7 +4330,7 @@ index 467108dcc1..eed2654476 100755
              size_t offset = size - MARKER_LENGTH;
              uint8_t *end = jpegBuffer + offset;
 diff --git a/services/camera/libcameraservice/api1/client2/Parameters.cpp b/services/camera/libcameraservice/api1/client2/Parameters.cpp
-index 123cd757e8..a406e62863 100644
+index 123cd75..a406e62 100644
 --- a/services/camera/libcameraservice/api1/client2/Parameters.cpp
 +++ b/services/camera/libcameraservice/api1/client2/Parameters.cpp
 @@ -50,7 +50,7 @@ Parameters::Parameters(int cameraId,
@@ -4429,7 +4446,7 @@ index 123cd757e8..a406e62863 100644
                      {sc.width, sc.height}, HAL_PIXEL_FORMAT_IMPLEMENTATION_DEFINED);
              if (minFrameDuration > MAX_PREVIEW_RECORD_DURATION_NS) {
 diff --git a/services/camera/libcameraservice/api1/client2/Parameters.h b/services/camera/libcameraservice/api1/client2/Parameters.h
-index cbe62a7754..1b2cedad90 100644
+index cbe62a7..1b2ceda 100644
 --- a/services/camera/libcameraservice/api1/client2/Parameters.h
 +++ b/services/camera/libcameraservice/api1/client2/Parameters.h
 @@ -269,7 +269,7 @@ struct Parameters {
@@ -4441,7 +4458,7 @@ index cbe62a7754..1b2cedad90 100644
  
      // Build fast-access device static info from static info
      status_t buildFastInfo(CameraDeviceBase *device);
-@@ -396,10 +396,9 @@ struct Parameters {
+@@ -396,10 +396,9 @@ private:
  
      Vector<Size> availablePreviewSizes;
      Vector<Size> availableVideoSizes;
@@ -4454,7 +4471,7 @@ index cbe62a7754..1b2cedad90 100644
      // Get max size (from the size array) that matches the given aspect ratio.
      Size getMaxSizeForRatio(float ratio, const int32_t* sizeArray, size_t count);
  
-@@ -459,6 +458,7 @@ struct Parameters {
+@@ -459,6 +458,7 @@ private:
      // Helper function to get the suggested video sizes
      Vector<Size> getPreferredVideoSizes() const;
  
@@ -4463,7 +4480,7 @@ index cbe62a7754..1b2cedad90 100644
  };
  
 diff --git a/services/camera/libcameraservice/api2/CameraDeviceClient.cpp b/services/camera/libcameraservice/api2/CameraDeviceClient.cpp
-index 5e9150143a..075e2d734a 100644
+index 5e91501..075e2d7 100644
 --- a/services/camera/libcameraservice/api2/CameraDeviceClient.cpp
 +++ b/services/camera/libcameraservice/api2/CameraDeviceClient.cpp
 @@ -51,14 +51,13 @@
@@ -4984,7 +5001,7 @@ index 5e9150143a..075e2d734a 100644
  
  binder::Status CameraDeviceClient::mapRequestTemplate(int templateId,
 diff --git a/services/camera/libcameraservice/api2/CameraDeviceClient.h b/services/camera/libcameraservice/api2/CameraDeviceClient.h
-index c5aad6b222..288f2d7cdc 100644
+index c5aad6b..288f2d7 100644
 --- a/services/camera/libcameraservice/api2/CameraDeviceClient.h
 +++ b/services/camera/libcameraservice/api2/CameraDeviceClient.h
 @@ -22,7 +22,6 @@
@@ -4995,7 +5012,7 @@ index c5aad6b222..288f2d7cdc 100644
  
  #include "CameraOfflineSessionClient.h"
  #include "CameraService.h"
-@@ -50,7 +49,6 @@ struct CameraDeviceClientBase :
+@@ -50,7 +49,6 @@ protected:
      CameraDeviceClientBase(const sp<CameraService>& cameraService,
              const sp<hardware::camera2::ICameraDeviceCallbacks>& remoteCallback,
              const String16& clientPackageName,
@@ -5003,7 +5020,7 @@ index c5aad6b222..288f2d7cdc 100644
              const std::optional<String16>& clientFeatureId,
              const String8& cameraId,
              int api1CameraId,
-@@ -179,7 +177,6 @@ class CameraDeviceClient :
+@@ -179,7 +177,6 @@ public:
      CameraDeviceClient(const sp<CameraService>& cameraService,
              const sp<hardware::camera2::ICameraDeviceCallbacks>& remoteCallback,
              const String16& clientPackageName,
@@ -5011,7 +5028,7 @@ index c5aad6b222..288f2d7cdc 100644
              const std::optional<String16>& clientFeatureId,
              const String8& cameraId,
              int cameraFacing,
-@@ -229,7 +226,7 @@ class CameraDeviceClient :
+@@ -229,7 +226,7 @@ protected:
      virtual void          detachDevice();
  
      // Calculate the ANativeWindow transform from android.sensor.orientation
@@ -5020,7 +5037,7 @@ index c5aad6b222..288f2d7cdc 100644
  
      bool isUltraHighResolutionSensor(const String8 &cameraId);
  
-@@ -289,7 +286,7 @@ class CameraDeviceClient :
+@@ -289,7 +286,7 @@ private:
  
      // Set the stream transform flags to automatically rotate the camera stream for preview use
      // cases.
@@ -5029,7 +5046,7 @@ index c5aad6b222..288f2d7cdc 100644
  
      // Utility method to insert the surface into SurfaceMap
      binder::Status insertGbpLocked(const sp<IGraphicBufferProducer>& gbp,
-@@ -306,10 +303,6 @@ class CameraDeviceClient :
+@@ -306,10 +303,6 @@ private:
      // Stream ID -> OutputConfiguration. Used for looking up Surface by stream/surface index
      KeyedVector<int32_t, hardware::camera2::params::OutputConfiguration> mConfiguredOutputs;
  
@@ -5040,7 +5057,7 @@ index c5aad6b222..288f2d7cdc 100644
      struct InputStreamConfiguration {
          bool configured;
          int32_t width;
-@@ -341,19 +334,12 @@ class CameraDeviceClient :
+@@ -341,19 +334,12 @@ private:
      // set of high resolution camera id (logical / physical)
      std::unordered_set<std::string> mHighResolutionSensors;
  
@@ -5061,7 +5078,7 @@ index c5aad6b222..288f2d7cdc 100644
  
  }; // namespace android
 diff --git a/services/camera/libcameraservice/api2/CameraOfflineSessionClient.cpp b/services/camera/libcameraservice/api2/CameraOfflineSessionClient.cpp
-index 9303fd2f2f..d76f492973 100644
+index 9303fd2..d76f492 100644
 --- a/services/camera/libcameraservice/api2/CameraOfflineSessionClient.cpp
 +++ b/services/camera/libcameraservice/api2/CameraOfflineSessionClient.cpp
 @@ -287,7 +287,7 @@ void CameraOfflineSessionClient::notifyShutter(const CaptureResultExtras& result
@@ -5094,10 +5111,10 @@ index 9303fd2f2f..d76f492973 100644
  // ----------------------------------------------------------------------------
  }; // namespace android
 diff --git a/services/camera/libcameraservice/api2/CameraOfflineSessionClient.h b/services/camera/libcameraservice/api2/CameraOfflineSessionClient.h
-index f2c42d8544..707bca4a7e 100644
+index f2c42d8..707bca4 100644
 --- a/services/camera/libcameraservice/api2/CameraOfflineSessionClient.h
 +++ b/services/camera/libcameraservice/api2/CameraOfflineSessionClient.h
-@@ -54,8 +54,7 @@ class CameraOfflineSessionClient :
+@@ -54,8 +54,7 @@ public:
              CameraService::BasicClient(
                      cameraService,
                      IInterface::asBinder(remoteCallback),
@@ -5107,7 +5124,7 @@ index f2c42d8544..707bca4a7e 100644
                      cameraIdStr, cameraFacing, sensorOrientation, clientPid, clientUid, servicePid),
              mRemoteCallback(remoteCallback), mOfflineSession(session),
              mCompositeStreamMap(offlineCompositeStreamMap) {}
-@@ -94,7 +93,7 @@ class CameraOfflineSessionClient :
+@@ -94,7 +93,7 @@ public:
      // NotificationListener API
      void notifyError(int32_t errorCode, const CaptureResultExtras& resultExtras) override;
      void notifyShutter(const CaptureResultExtras& resultExtras, nsecs_t timestamp) override;
@@ -5116,7 +5133,7 @@ index f2c42d8544..707bca4a7e 100644
      void notifyIdle(int64_t requestCount, int64_t resultErrorCount, bool deviceError,
              const std::vector<hardware::CameraStreamStats>& streamStats) override;
      void notifyAutoFocus(uint8_t newState, int triggerId) override;
-@@ -103,9 +102,6 @@ class CameraOfflineSessionClient :
+@@ -103,9 +102,6 @@ public:
      void notifyPrepared(int streamId) override;
      void notifyRequestQueueEmpty() override;
      void notifyRepeatingRequestError(long lastFrameNumber) override;
@@ -5127,7 +5144,7 @@ index f2c42d8544..707bca4a7e 100644
  private:
      mutable Mutex mBinderSerializationLock;
 diff --git a/services/camera/libcameraservice/api2/DepthCompositeStream.cpp b/services/camera/libcameraservice/api2/DepthCompositeStream.cpp
-index 048d85dcfa..a66a5921fc 100644
+index 048d85d..a66a592 100644
 --- a/services/camera/libcameraservice/api2/DepthCompositeStream.cpp
 +++ b/services/camera/libcameraservice/api2/DepthCompositeStream.cpp
 @@ -18,9 +18,6 @@
@@ -5185,7 +5202,7 @@ index 048d85dcfa..a66a5921fc 100644
  
      return res;
 diff --git a/services/camera/libcameraservice/api2/HeicCompositeStream.cpp b/services/camera/libcameraservice/api2/HeicCompositeStream.cpp
-index 54cc27aebf..a73ffb90c6 100644
+index 54cc27a..a73ffb9 100644
 --- a/services/camera/libcameraservice/api2/HeicCompositeStream.cpp
 +++ b/services/camera/libcameraservice/api2/HeicCompositeStream.cpp
 @@ -23,8 +23,7 @@
@@ -5274,7 +5291,7 @@ index 54cc27aebf..a73ffb90c6 100644
  
  void HeicCompositeStream::updateCodecQualityLocked(int32_t quality) {
 diff --git a/services/camera/libcameraservice/common/Camera2ClientBase.cpp b/services/camera/libcameraservice/common/Camera2ClientBase.cpp
-index dc5002bffa..9c3520c814 100644
+index b4daa69..a2ff766 100644
 --- a/services/camera/libcameraservice/common/Camera2ClientBase.cpp
 +++ b/services/camera/libcameraservice/common/Camera2ClientBase.cpp
 @@ -34,8 +34,6 @@
@@ -5286,7 +5303,7 @@ index dc5002bffa..9c3520c814 100644
  #include "utils/CameraThreadState.h"
  #include "utils/CameraServiceProxyWrapper.h"
  
-@@ -49,7 +47,6 @@ Camera2ClientBase<TClientBase>::Camera2ClientBase(
+@@ -50,7 +48,6 @@ Camera2ClientBase<TClientBase>::Camera2ClientBase(
          const sp<CameraService>& cameraService,
          const sp<TCamCallbacks>& remoteCallback,
          const String16& clientPackageName,
@@ -5294,7 +5311,7 @@ index dc5002bffa..9c3520c814 100644
          const std::optional<String16>& clientFeatureId,
          const String8& cameraId,
          int api1CameraId,
-@@ -60,18 +57,19 @@ Camera2ClientBase<TClientBase>::Camera2ClientBase(
+@@ -61,18 +58,19 @@ Camera2ClientBase<TClientBase>::Camera2ClientBase(
          int servicePid,
          bool overrideForPerfClass,
          bool legacyClient):
@@ -5319,7 +5336,7 @@ index dc5002bffa..9c3520c814 100644
  }
  
  template <typename TClientBase>
-@@ -106,28 +104,7 @@ status_t Camera2ClientBase<TClientBase>::initializeImpl(TProviderPtr providerPtr
+@@ -107,28 +105,7 @@ status_t Camera2ClientBase<TClientBase>::initializeImpl(TProviderPtr providerPtr
      if (res != OK) {
          return res;
      }
@@ -5349,7 +5366,7 @@ index dc5002bffa..9c3520c814 100644
      if (mDevice == NULL) {
          ALOGE("%s: Camera %s: No device connected",
                  __FUNCTION__, TClientBase::mCameraIdStr.string());
-@@ -242,23 +219,20 @@ status_t Camera2ClientBase<TClientBase>::dumpDevice(
+@@ -243,23 +220,20 @@ status_t Camera2ClientBase<TClientBase>::dumpDevice(
  template <typename TClientBase>
  binder::Status Camera2ClientBase<TClientBase>::disconnect() {
      ATRACE_CALL();
@@ -5374,7 +5391,7 @@ index dc5002bffa..9c3520c814 100644
          Camera2ClientBase::getCameraService()->cacheDump();
      }
  
-@@ -317,7 +291,7 @@ void Camera2ClientBase<TClientBase>::notifyError(
+@@ -318,7 +292,7 @@ void Camera2ClientBase<TClientBase>::notifyError(
  }
  
  template <typename TClientBase>
@@ -5383,7 +5400,7 @@ index dc5002bffa..9c3520c814 100644
      if (!mDeviceActive) {
          status_t res = TClientBase::startCameraStreamingOps();
          if (res != OK) {
-@@ -325,7 +299,7 @@ status_t Camera2ClientBase<TClientBase>::notifyActive(float maxPreviewFps) {
+@@ -326,7 +300,7 @@ status_t Camera2ClientBase<TClientBase>::notifyActive(float maxPreviewFps) {
                      TClientBase::mCameraIdStr.string(), res);
              return res;
          }
@@ -5392,7 +5409,7 @@ index dc5002bffa..9c3520c814 100644
      }
      mDeviceActive = true;
  
-@@ -334,10 +308,9 @@ status_t Camera2ClientBase<TClientBase>::notifyActive(float maxPreviewFps) {
+@@ -335,10 +309,9 @@ status_t Camera2ClientBase<TClientBase>::notifyActive(float maxPreviewFps) {
  }
  
  template <typename TClientBase>
@@ -5405,7 +5422,7 @@ index dc5002bffa..9c3520c814 100644
      if (mDeviceActive) {
          status_t res = TClientBase::finishCameraStreamingOps();
          if (res != OK) {
-@@ -345,8 +318,7 @@ void Camera2ClientBase<TClientBase>::notifyIdleWithUserTag(
+@@ -346,8 +319,7 @@ void Camera2ClientBase<TClientBase>::notifyIdleWithUserTag(
                      TClientBase::mCameraIdStr.string(), res);
          }
          CameraServiceProxyWrapper::logIdle(TClientBase::mCameraIdStr,
@@ -5415,19 +5432,19 @@ index dc5002bffa..9c3520c814 100644
      }
      mDeviceActive = false;
  
-@@ -421,6 +393,11 @@ int Camera2ClientBase<TClientBase>::getCameraId() const {
-     return mApi1CameraId;
+@@ -423,6 +395,11 @@ int Camera2ClientBase<TClientBase>::getCameraId() const {
  }
  
-+template <typename TClientBase>
+ template <typename TClientBase>
 +int Camera2ClientBase<TClientBase>::getCameraDeviceVersion() const {
 +    return mDeviceVersion;
 +}
 +
- template <typename TClientBase>
++template <typename TClientBase>
  const sp<CameraDeviceBase>& Camera2ClientBase<TClientBase>::getCameraDevice() {
      return mDevice;
-@@ -469,17 +446,6 @@ void Camera2ClientBase<TClientBase>::SharedCameraCallbacks::clear() {
+ }
+@@ -470,17 +447,6 @@ void Camera2ClientBase<TClientBase>::SharedCameraCallbacks::clear() {
      mRemoteCallback.clear();
  }
  
@@ -5446,10 +5463,10 @@ index dc5002bffa..9c3520c814 100644
  template class Camera2ClientBase<CameraDeviceClientBase>;
  
 diff --git a/services/camera/libcameraservice/common/Camera2ClientBase.h b/services/camera/libcameraservice/common/Camera2ClientBase.h
-index b0d1c3f676..29da33abdf 100644
+index e0e431e..1d03ff7 100644
 --- a/services/camera/libcameraservice/common/Camera2ClientBase.h
 +++ b/services/camera/libcameraservice/common/Camera2ClientBase.h
-@@ -48,7 +48,6 @@ class Camera2ClientBase :
+@@ -48,7 +48,6 @@ public:
      Camera2ClientBase(const sp<CameraService>& cameraService,
                        const sp<TCamCallbacks>& remoteCallback,
                        const String16& clientPackageName,
@@ -5457,7 +5474,7 @@ index b0d1c3f676..29da33abdf 100644
                        const std::optional<String16>& clientFeatureId,
                        const String8& cameraId,
                        int api1CameraId,
-@@ -73,11 +72,10 @@ class Camera2ClientBase :
+@@ -73,11 +72,10 @@ public:
  
      virtual void          notifyError(int32_t errorCode,
                                        const CaptureResultExtras& resultExtras);
@@ -5473,7 +5490,7 @@ index b0d1c3f676..29da33abdf 100644
      virtual void          notifyShutter(const CaptureResultExtras& resultExtras,
                                          nsecs_t timestamp);
      virtual void          notifyAutoFocus(uint8_t newState, int triggerId);
-@@ -88,11 +86,6 @@ class Camera2ClientBase :
+@@ -88,11 +86,6 @@ public:
      virtual void          notifyRequestQueueEmpty();
      virtual void          notifyRepeatingRequestError(long lastFrameNumber);
  
@@ -5485,7 +5502,7 @@ index b0d1c3f676..29da33abdf 100644
      int                   getCameraId() const;
      const sp<CameraDeviceBase>&
                            getCameraDevice();
-@@ -125,16 +118,10 @@ class Camera2ClientBase :
+@@ -125,10 +118,6 @@ public:
          mutable Mutex mRemoteCallbackLock;
      } mSharedCameraCallbacks;
  
@@ -5495,6 +5512,9 @@ index b0d1c3f676..29da33abdf 100644
 -
  protected:
  
+     // Used for watchdog timeout to monitor disconnect
+@@ -136,8 +125,6 @@ protected:
+ 
      // The PID provided in the constructor call
      pid_t mInitialClientPid;
 -    bool mOverrideForPerfClass = false;
@@ -5502,7 +5522,7 @@ index b0d1c3f676..29da33abdf 100644
  
      virtual sp<IBinder> asBinderWrapper() {
          return IInterface::asBinder(this);
-@@ -152,12 +139,11 @@ class Camera2ClientBase :
+@@ -155,12 +142,11 @@ protected:
  
      /** CameraDeviceBase instance wrapping HAL3+ entry */
  
@@ -5521,7 +5541,7 @@ index b0d1c3f676..29da33abdf 100644
      /** Utility members */
  
 diff --git a/services/camera/libcameraservice/common/CameraDeviceBase.h b/services/camera/libcameraservice/common/CameraDeviceBase.h
-index 7e2f93ce68..8168821128 100644
+index 7e2f93c..8168821 100644
 --- a/services/camera/libcameraservice/common/CameraDeviceBase.h
 +++ b/services/camera/libcameraservice/common/CameraDeviceBase.h
 @@ -35,7 +35,6 @@
@@ -5628,7 +5648,7 @@ index 7e2f93ce68..8168821128 100644
      /**
       * Connect HAL notifications to a listener. Overwrites previous
 diff --git a/services/camera/libcameraservice/common/CameraOfflineSessionBase.h b/services/camera/libcameraservice/common/CameraOfflineSessionBase.h
-index f39b92a48c..54e42a67c5 100644
+index f39b92a..54e42a6 100644
 --- a/services/camera/libcameraservice/common/CameraOfflineSessionBase.h
 +++ b/services/camera/libcameraservice/common/CameraOfflineSessionBase.h
 @@ -40,8 +40,7 @@ class NotificationListener : public virtual RefBase {
@@ -5643,7 +5663,7 @@ index f39b92a48c..54e42a67c5 100644
  
 diff --git a/services/camera/libcameraservice/common/CameraProviderInfoTemplated.h b/services/camera/libcameraservice/common/CameraProviderInfoTemplated.h
 deleted file mode 100644
-index db7692a8d1..0000000000
+index db7692a..0000000
 --- a/services/camera/libcameraservice/common/CameraProviderInfoTemplated.h
 +++ /dev/null
 @@ -1,112 +0,0 @@
@@ -5760,7 +5780,7 @@ index db7692a8d1..0000000000
 -
 -#endif
 diff --git a/services/camera/libcameraservice/common/CameraProviderManager.cpp b/services/camera/libcameraservice/common/CameraProviderManager.cpp
-index abaea6639f..b10a4c416e 100644
+index abaea66..b10a4c4 100644
 --- a/services/camera/libcameraservice/common/CameraProviderManager.cpp
 +++ b/services/camera/libcameraservice/common/CameraProviderManager.cpp
 @@ -20,17 +20,14 @@
@@ -8189,7 +8209,7 @@ index abaea6639f..b10a4c416e 100644
          return deviceInfo->getCameraCharacteristics(overrideForPerfClass, characteristics);
      }
 diff --git a/services/camera/libcameraservice/common/CameraProviderManager.h b/services/camera/libcameraservice/common/CameraProviderManager.h
-index a66598d9b2..8a1652b4b6 100644
+index a66598d..8a1652b 100644
 --- a/services/camera/libcameraservice/common/CameraProviderManager.h
 +++ b/services/camera/libcameraservice/common/CameraProviderManager.h
 @@ -29,12 +29,7 @@
@@ -8251,11 +8271,10 @@ index a66598d9b2..8a1652b4b6 100644
  };
  
  enum SystemCameraKind {
-@@ -96,26 +89,6 @@ enum SystemCameraKind {
- #define CAMERA_DEVICE_API_VERSION_3_6 HARDWARE_DEVICE_API_VERSION(3, 6)
+@@ -97,26 +90,6 @@ enum SystemCameraKind {
  #define CAMERA_DEVICE_API_VERSION_3_7 HARDWARE_DEVICE_API_VERSION(3, 7)
  
--/**
+ /**
 - * The vendor tag descriptor class that takes HIDL/AIDL vendor tag information as
 - * input. Not part of VendorTagDescriptor class because that class is used
 - * in AIDL generated sources which don't have access to AIDL / HIDL headers.
@@ -8275,10 +8294,11 @@ index a66598d9b2..8a1652b4b6 100644
 -            sp<VendorTagDescriptor>& descriptor);
 -};
 -
- /**
+-/**
   * A manager for all camera providers available on an Android device.
   *
-@@ -126,18 +99,14 @@ class IdlVendorTagDescriptor : public VendorTagDescriptor {
+  * Responsible for enumerating providers and the individual camera devices
+@@ -126,18 +99,14 @@ public:
   * opening them for active use.
   *
   */
@@ -8300,7 +8320,7 @@ index a66598d9b2..8a1652b4b6 100644
          virtual bool registerForNotifications(
                  const std::string &serviceName,
                  const sp<hidl::manager::V1_0::IServiceNotification>
-@@ -149,12 +118,12 @@ class CameraProviderManager : virtual public hidl::manager::V1_0::IServiceNotifi
+@@ -149,12 +118,12 @@ public:
          virtual sp<hardware::camera::provider::V2_4::ICameraProvider> getService(
                  const std::string &serviceName) = 0;
          virtual hardware::hidl_vec<hardware::hidl_string> listServices() = 0;
@@ -8315,7 +8335,7 @@ index a66598d9b2..8a1652b4b6 100644
          virtual bool registerForNotifications(
                  const std::string &serviceName,
                  const sp<hidl::manager::V1_0::IServiceNotification>
-@@ -181,15 +150,12 @@ class CameraProviderManager : virtual public hidl::manager::V1_0::IServiceNotifi
+@@ -181,15 +150,12 @@ public:
          ~StatusListener() {}
  
          virtual void onDeviceStatusChanged(const String8 &cameraId,
@@ -8334,7 +8354,7 @@ index a66598d9b2..8a1652b4b6 100644
          virtual void onNewProviderRegistered() = 0;
      };
  
-@@ -209,10 +175,7 @@ class CameraProviderManager : virtual public hidl::manager::V1_0::IServiceNotifi
+@@ -209,10 +175,7 @@ public:
       * used for testing. The lifetime of the proxy must exceed the lifetime of the manager.
       */
      status_t initialize(wp<StatusListener> listener,
@@ -8346,19 +8366,19 @@ index a66598d9b2..8a1652b4b6 100644
  
      /**
       * Retrieve the total number of available cameras.
-@@ -230,6 +193,11 @@ class CameraProviderManager : virtual public hidl::manager::V1_0::IServiceNotifi
-      */
+@@ -231,6 +194,11 @@ public:
      std::vector<std::string> getAPI1CompatibleCameraDeviceIds() const;
  
-+    /**
+     /**
 +     * Return true if a device with a given ID and major version exists
 +     */
 +    bool isValidDevice(const std::string &id, uint16_t majorVersion) const;
 +
-     /**
++    /**
       * Return true if a device with a given ID has a flash unit. Returns false
       * for devices that are unknown.
-@@ -245,7 +213,7 @@ class CameraProviderManager : virtual public hidl::manager::V1_0::IServiceNotifi
+      */
+@@ -245,7 +213,7 @@ public:
       * Return the resource cost of this camera device
       */
      status_t getResourceCost(const std::string &id,
@@ -8367,7 +8387,7 @@ index a66598d9b2..8a1652b4b6 100644
  
      /**
       * Return the old camera API camera info
-@@ -271,32 +239,20 @@ class CameraProviderManager : virtual public hidl::manager::V1_0::IServiceNotifi
+@@ -271,15 +239,14 @@ public:
       * Check for device support of specific stream combination.
       */
      status_t isSessionConfigurationSupported(const std::string& id,
@@ -8385,10 +8405,10 @@ index a66598d9b2..8a1652b4b6 100644
  
      /**
       * Check if a given camera device support setTorchMode API.
-      */
+@@ -287,17 +254,6 @@ public:
      bool supportSetTorchMode(const std::string &id) const;
  
--    /**
+     /**
 -     * Check if torch strength update should be skipped or not.
 -     */
 -    bool shouldSkipTorchStrengthUpdate(const std::string &id, int32_t torchStrength) const;
@@ -8399,14 +8419,14 @@ index a66598d9b2..8a1652b4b6 100644
 -     */
 -    int32_t getTorchDefaultStrengthLevel(const std::string &id) const;
 -
-     /**
+-    /**
       * Turn on or off the flashlight on a given camera device.
       * May fail if the device does not support this API, is in active use, or if the device
-@@ -304,24 +260,6 @@ class CameraProviderManager : virtual public hidl::manager::V1_0::IServiceNotifi
-      */
+      * doesn't exist, etc.
+@@ -305,24 +261,6 @@ public:
      status_t setTorchMode(const std::string &id, bool enabled);
  
--    /**
+     /**
 -     * Change the brightness level of the flash unit associated with the cameraId and
 -     * set it to the value in torchStrength.
 -     * If the torch is OFF and torchStrength > 0, the torch will be turned ON with the
@@ -8424,10 +8444,11 @@ index a66598d9b2..8a1652b4b6 100644
 -     */
 -    status_t getTorchStrengthLevel(const std::string &id, int32_t* torchStrength);
 -
-     /**
+-    /**
       * Setup vendor tags for all registered providers
       */
-@@ -330,19 +268,8 @@ class CameraProviderManager : virtual public hidl::manager::V1_0::IServiceNotifi
+     status_t setUpVendorTags();
+@@ -330,19 +268,8 @@ public:
      /**
       * Inform registered providers about a device state change, such as folding or unfolding
       */
@@ -8449,7 +8470,7 @@ index a66598d9b2..8a1652b4b6 100644
  
      /**
       * Open an active session to a camera device.
-@@ -350,7 +277,7 @@ class CameraProviderManager : virtual public hidl::manager::V1_0::IServiceNotifi
+@@ -350,7 +277,7 @@ public:
       * This fully powers on the camera device hardware, and returns a handle to a
       * session to be used for hardware configuration and operation.
       */
@@ -8458,7 +8479,7 @@ index a66598d9b2..8a1652b4b6 100644
              const sp<hardware::camera::device::V3_2::ICameraDeviceCallback>& callback,
              /*out*/
              sp<hardware::camera::device::V3_2::ICameraDeviceSession> *session);
-@@ -368,9 +295,6 @@ class CameraProviderManager : virtual public hidl::manager::V1_0::IServiceNotifi
+@@ -368,9 +295,6 @@ public:
              const hardware::hidl_string& name,
              bool preexisting) override;
  
@@ -8468,7 +8489,7 @@ index a66598d9b2..8a1652b4b6 100644
      /**
       * Dump out information about available providers and devices
       */
-@@ -385,7 +309,9 @@ class CameraProviderManager : virtual public hidl::manager::V1_0::IServiceNotifi
+@@ -385,7 +309,9 @@ public:
      /*
       * Return provider type for a specific device.
       */
@@ -8479,7 +8500,7 @@ index a66598d9b2..8a1652b4b6 100644
  
      /*
       * Check if a camera is a logical camera. And if yes, return
-@@ -398,91 +324,106 @@ class CameraProviderManager : virtual public hidl::manager::V1_0::IServiceNotifi
+@@ -398,91 +324,106 @@ public:
  
      status_t filterSmallJpegSizes(const std::string& cameraId);
  
@@ -8627,7 +8648,7 @@ index a66598d9b2..8a1652b4b6 100644
  
          /**
           * Notify provider about top-level device physical state changes
-@@ -491,11 +432,9 @@ class CameraProviderManager : virtual public hidl::manager::V1_0::IServiceNotifi
+@@ -491,11 +432,9 @@ private:
           * It is possible for camera providers to add/remove devices and try to
           * acquire it.
           */
@@ -8642,7 +8663,7 @@ index a66598d9b2..8a1652b4b6 100644
  
          std::vector<std::unordered_set<std::string>> getConcurrentCameraIdCombinations();
  
-@@ -504,62 +443,40 @@ class CameraProviderManager : virtual public hidl::manager::V1_0::IServiceNotifi
+@@ -504,62 +443,40 @@ private:
           *
           * Note that 'mInterfaceMutex' should be held when calling this method.
           */
@@ -8716,7 +8737,7 @@ index a66598d9b2..8a1652b4b6 100644
              virtual status_t getCameraInfo(hardware::CameraInfo *info) const = 0;
              virtual bool isAPI1Compatible() const = 0;
              virtual status_t dumpState(int fd) = 0;
-@@ -577,33 +494,44 @@ class CameraProviderManager : virtual public hidl::manager::V1_0::IServiceNotifi
+@@ -577,33 +494,44 @@ private:
              }
  
              virtual status_t isSessionConfigurationSupported(
@@ -8773,7 +8794,7 @@ index a66598d9b2..8a1652b4b6 100644
          };
          std::vector<std::unique_ptr<DeviceInfo>> mDevices;
          std::unordered_set<std::string> mUniqueCameraIds;
-@@ -618,47 +546,43 @@ class CameraProviderManager : virtual public hidl::manager::V1_0::IServiceNotifi
+@@ -618,47 +546,43 @@ private:
  
          // HALv3-specific camera fields, including the actual device interface
          struct DeviceInfo3 : public DeviceInfo {
@@ -8833,7 +8854,7 @@ index a66598d9b2..8a1652b4b6 100644
              status_t addDynamicDepthTags(bool maxResolution = false);
              status_t deriveHeicTags(bool maxResolution = false);
              status_t addRotateCropTags();
-@@ -688,7 +612,8 @@ class CameraProviderManager : virtual public hidl::manager::V1_0::IServiceNotifi
+@@ -688,7 +612,8 @@ private:
                      const camera_metadata_entry& halStreamConfigs,
                      const camera_metadata_entry& halStreamDurations);
          };
@@ -8843,7 +8864,7 @@ index a66598d9b2..8a1652b4b6 100644
          std::string mType;
          uint32_t mId;
  
-@@ -698,12 +623,12 @@ class CameraProviderManager : virtual public hidl::manager::V1_0::IServiceNotifi
+@@ -698,12 +623,12 @@ private:
  
          struct CameraStatusInfoT {
              bool isPhysicalCameraStatus = false;
@@ -8862,7 +8883,7 @@ index a66598d9b2..8a1652b4b6 100644
                      isPhysicalCameraStatus(isForPhysicalCamera), cameraId(id),
                      physicalCameraId(physicalId), status(s) {}
          };
-@@ -715,19 +640,22 @@ class CameraProviderManager : virtual public hidl::manager::V1_0::IServiceNotifi
+@@ -715,19 +640,22 @@ private:
          // End of scope for mInitLock
  
          std::future<void> mInitialStatusCallbackFuture;
@@ -8893,7 +8914,7 @@ index a66598d9b2..8a1652b4b6 100644
          // Parse provider instance name for type and id
          static status_t parseProviderName(const std::string& name,
                  std::string *type, uint32_t *id);
-@@ -739,71 +667,33 @@ class CameraProviderManager : virtual public hidl::manager::V1_0::IServiceNotifi
+@@ -739,71 +667,33 @@ private:
          // Generate vendor tag id
          static metadata_vendor_id_t generateVendorTagId(const std::string &name);
  
@@ -8978,7 +8999,7 @@ index a66598d9b2..8a1652b4b6 100644
              const sp<ProviderInfo>& providerInfo);
  
      bool isLogicalCameraLocked(const std::string& id, std::vector<std::string>* physicalCameraIds);
-@@ -815,13 +705,18 @@ class CameraProviderManager : virtual public hidl::manager::V1_0::IServiceNotifi
+@@ -815,13 +705,18 @@ private:
      status_t removeProvider(const std::string& provider);
      sp<StatusListener> getStatusListener() const;
  
@@ -9001,7 +9022,7 @@ index a66598d9b2..8a1652b4b6 100644
  
      static const char* deviceStatusToString(
          const hardware::camera::common::V1_0::CameraDeviceStatus&);
-@@ -833,16 +728,20 @@ class CameraProviderManager : virtual public hidl::manager::V1_0::IServiceNotifi
+@@ -833,16 +728,20 @@ private:
      void filterLogicalCameraIdsLocked(std::vector<std::string>& deviceIds) const;
  
      status_t getSystemCameraKindLocked(const std::string& id, SystemCameraKind *kind) const;
@@ -9028,7 +9049,7 @@ index a66598d9b2..8a1652b4b6 100644
  
  } // namespace android
 diff --git a/services/camera/libcameraservice/common/DepthPhotoProcessor.cpp b/services/camera/libcameraservice/common/DepthPhotoProcessor.cpp
-index 719ff2c975..c9956702dc 100644
+index 719ff2c..c995670 100644
 --- a/services/camera/libcameraservice/common/DepthPhotoProcessor.cpp
 +++ b/services/camera/libcameraservice/common/DepthPhotoProcessor.cpp
 @@ -42,10 +42,6 @@
@@ -9044,7 +9065,7 @@ index 719ff2c975..c9956702dc 100644
  using dynamic_depth::CameraParams;
 diff --git a/services/camera/libcameraservice/common/HalConversionsTemplated.h b/services/camera/libcameraservice/common/HalConversionsTemplated.h
 deleted file mode 100644
-index 96a715c7b8..0000000000
+index 96a715c..0000000
 --- a/services/camera/libcameraservice/common/HalConversionsTemplated.h
 +++ /dev/null
 @@ -1,97 +0,0 @@
@@ -9147,7 +9168,7 @@ index 96a715c7b8..0000000000
 -#endif
 diff --git a/services/camera/libcameraservice/common/aidl/AidlProviderInfo.cpp b/services/camera/libcameraservice/common/aidl/AidlProviderInfo.cpp
 deleted file mode 100644
-index 81b4779eb6..0000000000
+index 81b4779..0000000
 --- a/services/camera/libcameraservice/common/aidl/AidlProviderInfo.cpp
 +++ /dev/null
 @@ -1,832 +0,0 @@
@@ -9985,7 +10006,7 @@ index 81b4779eb6..0000000000
 -} //namespace android
 diff --git a/services/camera/libcameraservice/common/aidl/AidlProviderInfo.h b/services/camera/libcameraservice/common/aidl/AidlProviderInfo.h
 deleted file mode 100644
-index 97a8fed521..0000000000
+index 97a8fed..0000000
 --- a/services/camera/libcameraservice/common/aidl/AidlProviderInfo.h
 +++ /dev/null
 @@ -1,168 +0,0 @@
@@ -10159,7 +10180,7 @@ index 97a8fed521..0000000000
 -#endif
 diff --git a/services/camera/libcameraservice/common/hidl/HidlProviderInfo.cpp b/services/camera/libcameraservice/common/hidl/HidlProviderInfo.cpp
 deleted file mode 100644
-index bded9aafec..0000000000
+index bded9aa..0000000
 --- a/services/camera/libcameraservice/common/hidl/HidlProviderInfo.cpp
 +++ /dev/null
 @@ -1,1050 +0,0 @@
@@ -11215,7 +11236,7 @@ index bded9aafec..0000000000
 -} //namespace android
 diff --git a/services/camera/libcameraservice/common/hidl/HidlProviderInfo.h b/services/camera/libcameraservice/common/hidl/HidlProviderInfo.h
 deleted file mode 100644
-index e0f1646ab9..0000000000
+index e0f1646..0000000
 --- a/services/camera/libcameraservice/common/hidl/HidlProviderInfo.h
 +++ /dev/null
 @@ -1,136 +0,0 @@
@@ -11356,7 +11377,7 @@ index e0f1646ab9..0000000000
 -} // namespace android
 -#endif
 diff --git a/services/camera/libcameraservice/device3/BufferUtils.cpp b/services/camera/libcameraservice/device3/BufferUtils.cpp
-index c0d47d5497..f3adf20a47 100644
+index c0d47d5..f3adf20 100644
 --- a/services/camera/libcameraservice/device3/BufferUtils.cpp
 +++ b/services/camera/libcameraservice/device3/BufferUtils.cpp
 @@ -28,6 +28,16 @@
@@ -11377,7 +11398,7 @@ index c0d47d5497..f3adf20a47 100644
      std::lock_guard<std::mutex> oLock(other.mInflightLock);
      std::lock_guard<std::mutex> lock(mInflightLock);
 diff --git a/services/camera/libcameraservice/device3/BufferUtils.h b/services/camera/libcameraservice/device3/BufferUtils.h
-index 96fc1110e2..03112ecc2f 100644
+index 96fc111..03112ec 100644
 --- a/services/camera/libcameraservice/device3/BufferUtils.h
 +++ b/services/camera/libcameraservice/device3/BufferUtils.h
 @@ -154,6 +154,9 @@ namespace camera3 {
@@ -11391,7 +11412,7 @@ index 96fc1110e2..03112ecc2f 100644
  
  } // namespace android
 diff --git a/services/camera/libcameraservice/device3/Camera3Device.cpp b/services/camera/libcameraservice/device3/Camera3Device.cpp
-index 7c2f34f46e..1d47ef2301 100644
+index 727dd6c..1d47ef2 100644
 --- a/services/camera/libcameraservice/device3/Camera3Device.cpp
 +++ b/services/camera/libcameraservice/device3/Camera3Device.cpp
 @@ -70,6 +70,8 @@
@@ -12123,7 +12144,7 @@ index 7c2f34f46e..1d47ef2301 100644
      }
  
 -    // Calculate expected duration for flush with additional buffer time in ms for watchdog
--    uint64_t maxExpectedDuration = (getExpectedInFlightDuration() + kBaseGetBufferWait) / 1e6;
+-    uint64_t maxExpectedDuration = ns2ms(getExpectedInFlightDuration() + kBaseGetBufferWait);
 -    status_t res = mCameraServiceWatchdog->WATCH_CUSTOM_TIMER(mRequestThread->flush(),
 -            maxExpectedDuration / kCycleLengthMs, kCycleLengthMs);
 -
@@ -14009,7 +14030,7 @@ index 7c2f34f46e..1d47ef2301 100644
          ALOGE("%s: Failed to initialize the injection camera! ret != NO_ERROR: %d",
                  __FUNCTION__, res);
 diff --git a/services/camera/libcameraservice/device3/Camera3Device.h b/services/camera/libcameraservice/device3/Camera3Device.h
-index f927b4da0a..997afa0126 100644
+index f927b4d..997afa0 100644
 --- a/services/camera/libcameraservice/device3/Camera3Device.h
 +++ b/services/camera/libcameraservice/device3/Camera3Device.h
 @@ -29,10 +29,19 @@
@@ -14581,7 +14602,7 @@ index f927b4da0a..997afa0126 100644
  
  }; // class Camera3Device
 diff --git a/services/camera/libcameraservice/device3/Camera3DeviceInjectionMethods.cpp b/services/camera/libcameraservice/device3/Camera3DeviceInjectionMethods.cpp
-index 031c25583a..4744a6deb7 100644
+index 031c255..4744a6d 100644
 --- a/services/camera/libcameraservice/device3/Camera3DeviceInjectionMethods.cpp
 +++ b/services/camera/libcameraservice/device3/Camera3DeviceInjectionMethods.cpp
 @@ -26,6 +26,8 @@
@@ -14725,7 +14746,7 @@ index 031c25583a..4744a6deb7 100644
 +
  };  // namespace android
 diff --git a/services/camera/libcameraservice/device3/Camera3FakeStream.cpp b/services/camera/libcameraservice/device3/Camera3FakeStream.cpp
-index 19afd69d8f..b121e5dd25 100644
+index 19afd69..b121e5d 100644
 --- a/services/camera/libcameraservice/device3/Camera3FakeStream.cpp
 +++ b/services/camera/libcameraservice/device3/Camera3FakeStream.cpp
 @@ -48,7 +48,7 @@ status_t Camera3FakeStream::getBufferLocked(camera_stream_buffer *,
@@ -14756,7 +14777,7 @@ index 19afd69d8f..b121e5dd25 100644
      // Do nothing
      return OK;
 diff --git a/services/camera/libcameraservice/device3/Camera3FakeStream.h b/services/camera/libcameraservice/device3/Camera3FakeStream.h
-index 8cecabd861..c11a3e42fe 100644
+index 8cecabd..c11a3e4 100644
 --- a/services/camera/libcameraservice/device3/Camera3FakeStream.h
 +++ b/services/camera/libcameraservice/device3/Camera3FakeStream.h
 @@ -52,7 +52,7 @@ class Camera3FakeStream :
@@ -14795,7 +14816,7 @@ index 8cecabd861..c11a3e42fe 100644
      virtual status_t configureQueueLocked();
  
 diff --git a/services/camera/libcameraservice/device3/Camera3IOStreamBase.cpp b/services/camera/libcameraservice/device3/Camera3IOStreamBase.cpp
-index add1483bf8..7b128e01d4 100644
+index add1483..7b128e0 100644
 --- a/services/camera/libcameraservice/device3/Camera3IOStreamBase.cpp
 +++ b/services/camera/libcameraservice/device3/Camera3IOStreamBase.cpp
 @@ -34,12 +34,10 @@ Camera3IOStreamBase::Camera3IOStreamBase(int id, camera_stream_type_t type,
@@ -14843,7 +14864,7 @@ index add1483bf8..7b128e01d4 100644
      // Res may be an error, but we still want to decrement our owned count
      // to enable clean shutdown. So we'll just return the error but otherwise
 diff --git a/services/camera/libcameraservice/device3/Camera3IOStreamBase.h b/services/camera/libcameraservice/device3/Camera3IOStreamBase.h
-index f389d53b16..6135b7e253 100644
+index f389d53..6135b7e 100644
 --- a/services/camera/libcameraservice/device3/Camera3IOStreamBase.h
 +++ b/services/camera/libcameraservice/device3/Camera3IOStreamBase.h
 @@ -37,11 +37,7 @@ class Camera3IOStreamBase :
@@ -14876,7 +14897,7 @@ index f389d53b16..6135b7e253 100644
              int32_t transform,
              const std::vector<size_t>& surface_ids,
 diff --git a/services/camera/libcameraservice/device3/Camera3InputStream.cpp b/services/camera/libcameraservice/device3/Camera3InputStream.cpp
-index 9a3f7ed4a7..6eb798eedf 100644
+index 9a3f7ed..6eb798e 100644
 --- a/services/camera/libcameraservice/device3/Camera3InputStream.cpp
 +++ b/services/camera/libcameraservice/device3/Camera3InputStream.cpp
 @@ -105,7 +105,6 @@ status_t Camera3InputStream::getInputBufferLocked(
@@ -14906,7 +14927,7 @@ index 9a3f7ed4a7..6eb798eedf 100644
  
  status_t Camera3InputStream::getInputBufferProducerLocked(
 diff --git a/services/camera/libcameraservice/device3/Camera3InputStream.h b/services/camera/libcameraservice/device3/Camera3InputStream.h
-index 5e0587b9ec..6f66bca8ef 100644
+index 5e0587b..6f66bca 100644
 --- a/services/camera/libcameraservice/device3/Camera3InputStream.h
 +++ b/services/camera/libcameraservice/device3/Camera3InputStream.h
 @@ -61,7 +61,6 @@ class Camera3InputStream : public Camera3IOStreamBase,
@@ -14918,7 +14939,7 @@ index 5e0587b9ec..6f66bca8ef 100644
              int32_t transform,
              const std::vector<size_t>& surface_ids,
 diff --git a/services/camera/libcameraservice/device3/Camera3OfflineSession.cpp b/services/camera/libcameraservice/device3/Camera3OfflineSession.cpp
-index 7cfa255e6d..b702e20347 100644
+index 7cfa255..b702e20 100644
 --- a/services/camera/libcameraservice/device3/Camera3OfflineSession.cpp
 +++ b/services/camera/libcameraservice/device3/Camera3OfflineSession.cpp
 @@ -47,12 +47,14 @@ Camera3OfflineSession::Camera3OfflineSession(const String8 &id,
@@ -15159,7 +15180,7 @@ index 7cfa255e6d..b702e20347 100644
      ATRACE_CALL();
      std::lock_guard<std::mutex> lock(mLock);
 diff --git a/services/camera/libcameraservice/device3/Camera3OfflineSession.h b/services/camera/libcameraservice/device3/Camera3OfflineSession.h
-index a7997198e1..55819645f5 100644
+index a799719..5581964 100644
 --- a/services/camera/libcameraservice/device3/Camera3OfflineSession.h
 +++ b/services/camera/libcameraservice/device3/Camera3OfflineSession.h
 @@ -131,6 +131,7 @@ struct Camera3OfflineStates {
@@ -15263,7 +15284,7 @@ index a7997198e1..55819645f5 100644
  
  }; // namespace android
 diff --git a/services/camera/libcameraservice/device3/Camera3OutputStream.cpp b/services/camera/libcameraservice/device3/Camera3OutputStream.cpp
-index 1e20ee0eb8..c6f5759780 100644
+index 1e20ee0..c6f5759 100644
 --- a/services/camera/libcameraservice/device3/Camera3OutputStream.cpp
 +++ b/services/camera/libcameraservice/device3/Camera3OutputStream.cpp
 @@ -18,20 +18,15 @@
@@ -15814,7 +15835,7 @@ index 1e20ee0eb8..c6f5759780 100644
      Mutex::Autolock l(mLock);
      return shouldLogError(res, mState);
 diff --git a/services/camera/libcameraservice/device3/Camera3OutputStream.h b/services/camera/libcameraservice/device3/Camera3OutputStream.h
-index e8065cee42..b2b574a7ac 100644
+index e8065ce..b2b574a 100644
 --- a/services/camera/libcameraservice/device3/Camera3OutputStream.h
 +++ b/services/camera/libcameraservice/device3/Camera3OutputStream.h
 @@ -21,15 +21,13 @@
@@ -15891,30 +15912,30 @@ index e8065cee42..b2b574a7ac 100644
  
      /**
       * Return if this output stream is for video encoding.
-@@ -159,11 +142,6 @@ class Camera3OutputStream :
-      */
+@@ -160,11 +143,6 @@ class Camera3OutputStream :
      bool isConsumedByHWTexture() const;
  
--    /**
+     /**
 -     * Return if this output stream is consumed by CPU.
 -     */
 -    bool isConsumedByCPU() const;
 -
-     /**
+-    /**
       * Return if the consumer configuration of this stream is deferred.
       */
-@@ -246,11 +224,6 @@ class Camera3OutputStream :
-      */
+     virtual bool isConsumerConfigurationDeferred(size_t surface_id) const;
+@@ -247,11 +225,6 @@ class Camera3OutputStream :
      virtual status_t setBatchSize(size_t batchSize = 1) override;
  
--    /**
+     /**
 -     * Notify the stream on change of min frame durations.
 -     */
 -    virtual void onMinDurationChanged(nsecs_t duration) override;
 -
-     /**
+-    /**
       * Apply ZSL related consumer usage quirk.
       */
+     static void applyZSLUsageQuirk(int format, uint64_t *consumerUsage /*inout*/);
 @@ -264,14 +237,9 @@ class Camera3OutputStream :
              uint32_t width, uint32_t height, int format,
              android_dataspace dataSpace, camera_stream_rotation_t rotation,
@@ -16031,7 +16052,7 @@ index e8065cee42..b2b574a7ac 100644
  
  } // namespace camera3
 diff --git a/services/camera/libcameraservice/device3/Camera3OutputStreamInterface.h b/services/camera/libcameraservice/device3/Camera3OutputStreamInterface.h
-index a6d4b96c7f..49f9f62b6d 100644
+index a6d4b96..49f9f62 100644
 --- a/services/camera/libcameraservice/device3/Camera3OutputStreamInterface.h
 +++ b/services/camera/libcameraservice/device3/Camera3OutputStreamInterface.h
 @@ -34,7 +34,7 @@ class Camera3OutputStreamInterface : public virtual Camera3StreamInterface {
@@ -16059,7 +16080,7 @@ index a6d4b96c7f..49f9f62b6d 100644
  
  // Helper class to organize a synchronized mapping of stream IDs to stream instances
 diff --git a/services/camera/libcameraservice/device3/Camera3OutputUtils.cpp b/services/camera/libcameraservice/device3/Camera3OutputUtils.cpp
-index ed66df0eb1..d765b024d5 100644
+index ed66df0..d765b02 100644
 --- a/services/camera/libcameraservice/device3/Camera3OutputUtils.cpp
 +++ b/services/camera/libcameraservice/device3/Camera3OutputUtils.cpp
 @@ -376,6 +376,43 @@ void sendCaptureResult(
@@ -16674,7 +16695,7 @@ index ed66df0eb1..d765b024d5 100644
                          if (res != OK) {
                              ALOGE("%s: Can't return output buffer for frame %d to"
 diff --git a/services/camera/libcameraservice/device3/Camera3OutputUtils.h b/services/camera/libcameraservice/device3/Camera3OutputUtils.h
-index d6107c28e4..98fbab566c 100644
+index d6107c2..98fbab5 100644
 --- a/services/camera/libcameraservice/device3/Camera3OutputUtils.h
 +++ b/services/camera/libcameraservice/device3/Camera3OutputUtils.h
 @@ -38,6 +38,8 @@
@@ -16750,7 +16771,7 @@ index d6107c28e4..98fbab566c 100644
          std::mutex& inflightLock;
 diff --git a/services/camera/libcameraservice/device3/Camera3OutputUtilsTemplated.h b/services/camera/libcameraservice/device3/Camera3OutputUtilsTemplated.h
 deleted file mode 100644
-index 2e05dda45c..0000000000
+index 2e05dda..0000000
 --- a/services/camera/libcameraservice/device3/Camera3OutputUtilsTemplated.h
 +++ /dev/null
 @@ -1,349 +0,0 @@
@@ -17104,7 +17125,7 @@ index 2e05dda45c..0000000000
 -
 -#endif
 diff --git a/services/camera/libcameraservice/device3/Camera3SharedOutputStream.cpp b/services/camera/libcameraservice/device3/Camera3SharedOutputStream.cpp
-index 9215f23ecb..9e0c8f3d96 100644
+index 9215f23..9e0c8f3 100644
 --- a/services/camera/libcameraservice/device3/Camera3SharedOutputStream.cpp
 +++ b/services/camera/libcameraservice/device3/Camera3SharedOutputStream.cpp
 @@ -32,15 +32,11 @@ Camera3SharedOutputStream::Camera3SharedOutputStream(int id,
@@ -17165,10 +17186,10 @@ index 9215f23ecb..9e0c8f3d96 100644
          }
      }
 diff --git a/services/camera/libcameraservice/device3/Camera3SharedOutputStream.h b/services/camera/libcameraservice/device3/Camera3SharedOutputStream.h
-index aac3c2a868..4b6341bf2b 100644
+index aac3c2a..4b6341b 100644
 --- a/services/camera/libcameraservice/device3/Camera3SharedOutputStream.h
 +++ b/services/camera/libcameraservice/device3/Camera3SharedOutputStream.h
-@@ -38,14 +38,9 @@ class Camera3SharedOutputStream :
+@@ -38,14 +38,9 @@ public:
              uint64_t consumerUsage, android_dataspace dataSpace,
              camera_stream_rotation_t rotation, nsecs_t timestampOffset,
              const String8& physicalCameraId,
@@ -17186,7 +17207,7 @@ index aac3c2a868..4b6341bf2b 100644
      virtual ~Camera3SharedOutputStream();
  
 diff --git a/services/camera/libcameraservice/device3/Camera3Stream.cpp b/services/camera/libcameraservice/device3/Camera3Stream.cpp
-index 7ad6649754..afcfd2a026 100644
+index 7ad6649..afcfd2a 100644
 --- a/services/camera/libcameraservice/device3/Camera3Stream.cpp
 +++ b/services/camera/libcameraservice/device3/Camera3Stream.cpp
 @@ -14,8 +14,6 @@
@@ -17357,7 +17378,7 @@ index 7ad6649754..afcfd2a026 100644
  
  }; // namespace android
 diff --git a/services/camera/libcameraservice/device3/Camera3Stream.h b/services/camera/libcameraservice/device3/Camera3Stream.h
-index d429e6caa8..fc75f79f9e 100644
+index d429e6c..fc75f79 100644
 --- a/services/camera/libcameraservice/device3/Camera3Stream.h
 +++ b/services/camera/libcameraservice/device3/Camera3Stream.h
 @@ -138,10 +138,6 @@ class Camera3Stream :
@@ -17426,7 +17447,7 @@ index d429e6caa8..fc75f79f9e 100644
  
  }; // namespace camera3
 diff --git a/services/camera/libcameraservice/device3/Camera3StreamInterface.h b/services/camera/libcameraservice/device3/Camera3StreamInterface.h
-index 6812e89581..3aa5a3ce41 100644
+index 6812e89..3aa5a3c 100644
 --- a/services/camera/libcameraservice/device3/Camera3StreamInterface.h
 +++ b/services/camera/libcameraservice/device3/Camera3StreamInterface.h
 @@ -19,7 +19,6 @@
@@ -17529,7 +17550,7 @@ index 6812e89581..3aa5a3ce41 100644
              uint64_t frameNumber = 0, int32_t transform = -1) = 0;
  
 diff --git a/services/camera/libcameraservice/device3/Camera3StreamSplitter.cpp b/services/camera/libcameraservice/device3/Camera3StreamSplitter.cpp
-index fd239589e5..5c6c518fae 100644
+index fd23958..5c6c518 100644
 --- a/services/camera/libcameraservice/device3/Camera3StreamSplitter.cpp
 +++ b/services/camera/libcameraservice/device3/Camera3StreamSplitter.cpp
 @@ -34,16 +34,13 @@
@@ -17598,7 +17619,7 @@ index fd239589e5..5c6c518fae 100644
      // queueBuffer (which will try to acquire the output lock), the output could be holding its
      // own lock calling releaseBuffer (which  will try to acquire the splitter lock), running into
 diff --git a/services/camera/libcameraservice/device3/Camera3StreamSplitter.h b/services/camera/libcameraservice/device3/Camera3StreamSplitter.h
-index 0f728a0786..4eb455abea 100644
+index 0f728a0..4eb455a 100644
 --- a/services/camera/libcameraservice/device3/Camera3StreamSplitter.h
 +++ b/services/camera/libcameraservice/device3/Camera3StreamSplitter.h
 @@ -19,8 +19,6 @@
@@ -17610,7 +17631,7 @@ index 0f728a0786..4eb455abea 100644
  #include <gui/IConsumerListener.h>
  #include <gui/IProducerListener.h>
  #include <gui/BufferItemConsumer.h>
-@@ -57,8 +55,7 @@ class Camera3StreamSplitter : public BnConsumerListener {
+@@ -57,8 +55,7 @@ public:
      // with output surfaces.
      status_t connect(const std::unordered_map<size_t, sp<Surface>> &surfaces,
              uint64_t consumerUsage, uint64_t producerUsage, size_t halMaxBuffers, uint32_t width,
@@ -17620,7 +17641,7 @@ index 0f728a0786..4eb455abea 100644
  
      // addOutput adds an output BufferQueue to the splitter. The splitter
      // connects to outputQueue as a CPU producer, and any buffers queued
-@@ -235,7 +232,6 @@ class Camera3StreamSplitter : public BnConsumerListener {
+@@ -235,7 +232,6 @@ private:
      uint32_t mHeight = 0;
      android::PixelFormat mFormat = android::PIXEL_FORMAT_NONE;
      uint64_t mProducerUsage = 0;
@@ -17628,7 +17649,7 @@ index 0f728a0786..4eb455abea 100644
  
      // The attachBuffer call will happen on different thread according to mUseHalBufManager and have
      // different timing constraint.
-@@ -255,9 +251,6 @@ class Camera3StreamSplitter : public BnConsumerListener {
+@@ -255,9 +251,6 @@ private:
      //Map surface ids -> gbp outputs
      std::unordered_map<int, sp<IGraphicBufferProducer> > mOutputs;
  
@@ -17639,7 +17660,7 @@ index 0f728a0786..4eb455abea 100644
      std::unordered_map<int, size_t > mConsumerBufferCount;
  
 diff --git a/services/camera/libcameraservice/device3/DistortionMapper.cpp b/services/camera/libcameraservice/device3/DistortionMapper.cpp
-index 15807bf6cf..89dd115392 100644
+index 15807bf..89dd115 100644
 --- a/services/camera/libcameraservice/device3/DistortionMapper.cpp
 +++ b/services/camera/libcameraservice/device3/DistortionMapper.cpp
 @@ -22,7 +22,7 @@
@@ -17652,7 +17673,7 @@ index 15807bf6cf..89dd115392 100644
  namespace android {
  
 diff --git a/services/camera/libcameraservice/device3/InFlightRequest.h b/services/camera/libcameraservice/device3/InFlightRequest.h
-index 493a9e2fb6..e752c8c5ad 100644
+index 493a9e2..e752c8c 100644
 --- a/services/camera/libcameraservice/device3/InFlightRequest.h
 +++ b/services/camera/libcameraservice/device3/InFlightRequest.h
 @@ -65,7 +65,6 @@ typedef struct camera_capture_result {
@@ -17727,7 +17748,7 @@ index 493a9e2fb6..e752c8c5ad 100644
              errorBufStrategy(ERROR_BUF_CACHE),
 diff --git a/services/camera/libcameraservice/device3/PreviewFrameScheduler.cpp b/services/camera/libcameraservice/device3/PreviewFrameScheduler.cpp
 new file mode 100644
-index 0000000000..2de2732b4c
+index 0000000..2de2732
 --- /dev/null
 +++ b/services/camera/libcameraservice/device3/PreviewFrameScheduler.cpp
 @@ -0,0 +1,210 @@
@@ -17943,7 +17964,7 @@ index 0000000000..2de2732b4c
 +}; // namespace android
 diff --git a/services/camera/libcameraservice/device3/PreviewFrameScheduler.h b/services/camera/libcameraservice/device3/PreviewFrameScheduler.h
 new file mode 100644
-index 0000000000..c0574fd3d4
+index 0000000..c0574fd
 --- /dev/null
 +++ b/services/camera/libcameraservice/device3/PreviewFrameScheduler.h
 @@ -0,0 +1,108 @@
@@ -18057,7 +18078,7 @@ index 0000000000..c0574fd3d4
 +#endif
 diff --git a/services/camera/libcameraservice/device3/PreviewFrameSpacer.cpp b/services/camera/libcameraservice/device3/PreviewFrameSpacer.cpp
 deleted file mode 100644
-index 0439501733..0000000000
+index 0439501..0000000
 --- a/services/camera/libcameraservice/device3/PreviewFrameSpacer.cpp
 +++ /dev/null
 @@ -1,131 +0,0 @@
@@ -18194,7 +18215,7 @@ index 0439501733..0000000000
 -}; // namespace android
 diff --git a/services/camera/libcameraservice/device3/PreviewFrameSpacer.h b/services/camera/libcameraservice/device3/PreviewFrameSpacer.h
 deleted file mode 100644
-index e165768b97..0000000000
+index e165768..0000000
 --- a/services/camera/libcameraservice/device3/PreviewFrameSpacer.h
 +++ /dev/null
 @@ -1,94 +0,0 @@
@@ -18293,7 +18314,7 @@ index e165768b97..0000000000
 -
 -#endif
 diff --git a/services/camera/libcameraservice/device3/ZoomRatioMapper.cpp b/services/camera/libcameraservice/device3/ZoomRatioMapper.cpp
-index 27b00c930e..7ec0956d1e 100644
+index 27b00c9..7ec0956 100644
 --- a/services/camera/libcameraservice/device3/ZoomRatioMapper.cpp
 +++ b/services/camera/libcameraservice/device3/ZoomRatioMapper.cpp
 @@ -20,7 +20,7 @@
@@ -18307,10 +18328,10 @@ index 27b00c930e..7ec0956d1e 100644
  
 diff --git a/services/camera/libcameraservice/device3/aidl/AidlCamera3Device.cpp b/services/camera/libcameraservice/device3/aidl/AidlCamera3Device.cpp
 deleted file mode 100644
-index f05520f53e..0000000000
+index c5d81df..0000000
 --- a/services/camera/libcameraservice/device3/aidl/AidlCamera3Device.cpp
 +++ /dev/null
-@@ -1,1583 +0,0 @@
+@@ -1,1590 +0,0 @@
 -/*
 - * Copyright (C) 2022 The Android Open Source Project
 - *
@@ -18364,6 +18385,7 @@ index f05520f53e..0000000000
 -
 -#include <aidl/android/hardware/camera/device/ICameraInjectionSession.h>
 -#include <aidlcommonsupport/NativeHandle.h>
+-#include <android/binder_ibinder_platform.h>
 -#include <android/hardware/camera2/ICameraDeviceUser.h>
 -
 -#include "utils/CameraTraces.h"
@@ -18980,6 +19002,12 @@ index f05520f53e..0000000000
 -        return ::ndk::ScopedAStatus::ok();
 -    }
 -    return p->returnStreamBuffers(buffers);
+-}
+-
+-::ndk::SpAIBinder AidlCamera3Device::AidlCameraDeviceCallbacks::createBinder() {
+-    auto binder = BnCameraDeviceCallback::createBinder();
+-    AIBinder_setInheritRt(binder.get(), /*inheritRt*/ true);
+-    return binder;
 -}
 -
 -::ndk::ScopedAStatus AidlCamera3Device::returnStreamBuffers(
@@ -19896,10 +19924,10 @@ index f05520f53e..0000000000
 -}; // namespace android
 diff --git a/services/camera/libcameraservice/device3/aidl/AidlCamera3Device.h b/services/camera/libcameraservice/device3/aidl/AidlCamera3Device.h
 deleted file mode 100644
-index d20a7ebdc9..0000000000
+index fd66661..0000000
 --- a/services/camera/libcameraservice/device3/aidl/AidlCamera3Device.h
 +++ /dev/null
-@@ -1,273 +0,0 @@
+@@ -1,277 +0,0 @@
 -/*
 - * Copyright (C) 2022 The Android Open Source Project
 - *
@@ -20144,6 +20172,10 @@ index d20a7ebdc9..0000000000
 -        ::ndk::ScopedAStatus returnStreamBuffers(
 -                const std::vector<
 -                        aidl::android::hardware::camera::device::StreamBuffer>& buffers) override;
+-
+-        protected:
+-        ::ndk::SpAIBinder createBinder() override;
+-
 -        private:
 -            wp<AidlCamera3Device> mParent = nullptr;
 -    };
@@ -20175,10 +20207,10 @@ index d20a7ebdc9..0000000000
 -#endif
 diff --git a/services/camera/libcameraservice/device3/aidl/AidlCamera3OfflineSession.cpp b/services/camera/libcameraservice/device3/aidl/AidlCamera3OfflineSession.cpp
 deleted file mode 100644
-index 336719decd..0000000000
+index 8d4b20f..0000000
 --- a/services/camera/libcameraservice/device3/aidl/AidlCamera3OfflineSession.cpp
 +++ /dev/null
-@@ -1,247 +0,0 @@
+@@ -1,254 +0,0 @@
 -/*
 - * Copyright (C) 2022 The Android Open Source Project
 - *
@@ -20211,6 +20243,7 @@ index 336719decd..0000000000
 -#include <utils/Trace.h>
 -
 -#include <android/hardware/camera2/ICameraDeviceCallbacks.h>
+-#include <android/binder_ibinder_platform.h>
 -
 -#include "device3/aidl/AidlCamera3OfflineSession.h"
 -#include "device3/Camera3OutputStream.h"
@@ -20399,6 +20432,12 @@ index 336719decd..0000000000
 -    return p->returnStreamBuffers(buffers);
 -}
 -
+-::ndk::SpAIBinder AidlCamera3OfflineSession::AidlCameraDeviceCallbacks::createBinder() {
+-    auto binder = BnCameraDeviceCallback::createBinder();
+-    AIBinder_setInheritRt(binder.get(), /*inheritRt*/ true);
+-    return binder;
+-}
+-
 -::ndk::ScopedAStatus AidlCamera3OfflineSession::returnStreamBuffers(
 -        const std::vector<camera::device::StreamBuffer>& buffers) {
 -    {
@@ -20428,10 +20467,10 @@ index 336719decd..0000000000
 -}; // namespace android
 diff --git a/services/camera/libcameraservice/device3/aidl/AidlCamera3OfflineSession.h b/services/camera/libcameraservice/device3/aidl/AidlCamera3OfflineSession.h
 deleted file mode 100644
-index 33de2c5bf2..0000000000
+index d107af6..0000000
 --- a/services/camera/libcameraservice/device3/aidl/AidlCamera3OfflineSession.h
 +++ /dev/null
-@@ -1,136 +0,0 @@
+@@ -1,140 +0,0 @@
 -/*
 - * Copyright (C) 2022 The Android Open Source Project
 - *
@@ -20531,6 +20570,10 @@ index 33de2c5bf2..0000000000
 -        ::ndk::ScopedAStatus returnStreamBuffers(
 -                const std::vector<
 -                        aidl::android::hardware::camera::device::StreamBuffer>& buffers) override;
+-        protected:
+-
+-        ::ndk::SpAIBinder createBinder() override;
+-
 -        private:
 -            wp<AidlCamera3OfflineSession> mParent = nullptr;
 -    };
@@ -20570,7 +20613,7 @@ index 33de2c5bf2..0000000000
 -#endif
 diff --git a/services/camera/libcameraservice/device3/aidl/AidlCamera3OutputUtils.cpp b/services/camera/libcameraservice/device3/aidl/AidlCamera3OutputUtils.cpp
 deleted file mode 100644
-index 02eebd24f3..0000000000
+index 02eebd2..0000000
 --- a/services/camera/libcameraservice/device3/aidl/AidlCamera3OutputUtils.cpp
 +++ /dev/null
 @@ -1,343 +0,0 @@
@@ -20919,7 +20962,7 @@ index 02eebd24f3..0000000000
 -} // namespace android
 diff --git a/services/camera/libcameraservice/device3/aidl/AidlCamera3OutputUtils.h b/services/camera/libcameraservice/device3/aidl/AidlCamera3OutputUtils.h
 deleted file mode 100644
-index e7956242d6..0000000000
+index e795624..0000000
 --- a/services/camera/libcameraservice/device3/aidl/AidlCamera3OutputUtils.h
 +++ /dev/null
 @@ -1,100 +0,0 @@
@@ -21025,7 +21068,7 @@ index e7956242d6..0000000000
 -#endif
 diff --git a/services/camera/libcameraservice/device3/hidl/HidlCamera3Device.cpp b/services/camera/libcameraservice/device3/hidl/HidlCamera3Device.cpp
 deleted file mode 100644
-index 4bb426c515..0000000000
+index 4bb426c..0000000
 --- a/services/camera/libcameraservice/device3/hidl/HidlCamera3Device.cpp
 +++ /dev/null
 @@ -1,1856 +0,0 @@
@@ -22887,7 +22930,7 @@ index 4bb426c515..0000000000
 -}; // namespace android
 diff --git a/services/camera/libcameraservice/device3/hidl/HidlCamera3Device.h b/services/camera/libcameraservice/device3/hidl/HidlCamera3Device.h
 deleted file mode 100644
-index 2e98fe068c..0000000000
+index 2e98fe0..0000000
 --- a/services/camera/libcameraservice/device3/hidl/HidlCamera3Device.h
 +++ /dev/null
 @@ -1,237 +0,0 @@
@@ -23130,7 +23173,7 @@ index 2e98fe068c..0000000000
 -#endif
 diff --git a/services/camera/libcameraservice/device3/hidl/HidlCamera3OfflineSession.cpp b/services/camera/libcameraservice/device3/hidl/HidlCamera3OfflineSession.cpp
 deleted file mode 100644
-index 5c97f0eb82..0000000000
+index 5c97f0e..0000000
 --- a/services/camera/libcameraservice/device3/hidl/HidlCamera3OfflineSession.cpp
 +++ /dev/null
 @@ -1,235 +0,0 @@
@@ -23371,7 +23414,7 @@ index 5c97f0eb82..0000000000
 -}; // namespace android
 diff --git a/services/camera/libcameraservice/device3/hidl/HidlCamera3OfflineSession.h b/services/camera/libcameraservice/device3/hidl/HidlCamera3OfflineSession.h
 deleted file mode 100644
-index 597cc5d2b7..0000000000
+index 597cc5d..0000000
 --- a/services/camera/libcameraservice/device3/hidl/HidlCamera3OfflineSession.h
 +++ /dev/null
 @@ -1,109 +0,0 @@
@@ -23486,7 +23529,7 @@ index 597cc5d2b7..0000000000
 -#endif
 diff --git a/services/camera/libcameraservice/device3/hidl/HidlCamera3OutputUtils.cpp b/services/camera/libcameraservice/device3/hidl/HidlCamera3OutputUtils.cpp
 deleted file mode 100644
-index 8b0cd65e62..0000000000
+index 8b0cd65..0000000
 --- a/services/camera/libcameraservice/device3/hidl/HidlCamera3OutputUtils.cpp
 +++ /dev/null
 @@ -1,261 +0,0 @@
@@ -23753,7 +23796,7 @@ index 8b0cd65e62..0000000000
 -} // namespace android
 diff --git a/services/camera/libcameraservice/device3/hidl/HidlCamera3OutputUtils.h b/services/camera/libcameraservice/device3/hidl/HidlCamera3OutputUtils.h
 deleted file mode 100644
-index 5e6cba6453..0000000000
+index 5e6cba6..0000000
 --- a/services/camera/libcameraservice/device3/hidl/HidlCamera3OutputUtils.h
 +++ /dev/null
 @@ -1,74 +0,0 @@
@@ -23832,10 +23875,10 @@ index 5e6cba6453..0000000000
 -
 -#endif
 diff --git a/services/camera/libcameraservice/hidl/AidlCameraServiceListener.cpp b/services/camera/libcameraservice/hidl/AidlCameraServiceListener.cpp
-index add9121432..ddc114ad45 100644
+index add9121..ddc114a 100644
 --- a/services/camera/libcameraservice/hidl/AidlCameraServiceListener.cpp
 +++ b/services/camera/libcameraservice/hidl/AidlCameraServiceListener.cpp
-@@ -70,11 +70,6 @@ ::android::binder::Status H2BCameraServiceListener::onTorchStatusChanged(
+@@ -70,11 +70,6 @@ binder::Status H2BCameraServiceListener::onPhysicalCameraStatusChanged(
    return binder::Status::ok();
  }
  
@@ -23848,7 +23891,7 @@ index add9121432..ddc114ad45 100644
  } // V2_0
  } // common
 diff --git a/services/camera/libcameraservice/hidl/AidlCameraServiceListener.h b/services/camera/libcameraservice/hidl/AidlCameraServiceListener.h
-index 7ef413f18e..71480357fd 100644
+index 7ef413f..7148035 100644
 --- a/services/camera/libcameraservice/hidl/AidlCameraServiceListener.h
 +++ b/services/camera/libcameraservice/hidl/AidlCameraServiceListener.h
 @@ -54,8 +54,6 @@ struct H2BCameraServiceListener :
@@ -23861,7 +23904,7 @@ index 7ef413f18e..71480357fd 100644
          // TODO: no implementation yet.
          return binder::Status::ok();
 diff --git a/services/camera/libcameraservice/libcameraservice_fuzzer/Android.bp b/services/camera/libcameraservice/libcameraservice_fuzzer/Android.bp
-index e43b91fbd9..4f080fe283 100644
+index e43b91f..4f080fe 100644
 --- a/services/camera/libcameraservice/libcameraservice_fuzzer/Android.bp
 +++ b/services/camera/libcameraservice/libcameraservice_fuzzer/Android.bp
 @@ -52,7 +52,6 @@ cc_fuzz {
@@ -23873,10 +23916,10 @@ index e43b91fbd9..4f080fe283 100644
          "android.hardware.camera.device@3.2",
          "android.hardware.camera.device@3.3",
 diff --git a/services/camera/libcameraservice/libcameraservice_fuzzer/camera_service_fuzzer.cpp b/services/camera/libcameraservice/libcameraservice_fuzzer/camera_service_fuzzer.cpp
-index 97d7bf48d4..e46bf74750 100644
+index 97d7bf4..e46bf74 100644
 --- a/services/camera/libcameraservice/libcameraservice_fuzzer/camera_service_fuzzer.cpp
 +++ b/services/camera/libcameraservice/libcameraservice_fuzzer/camera_service_fuzzer.cpp
-@@ -466,12 +466,6 @@ class TestCameraServiceListener : public hardware::BnCameraServiceListener {
+@@ -466,12 +466,6 @@ public:
          // No op
          return binder::Status::ok();
      }
@@ -23890,7 +23933,7 @@ index 97d7bf48d4..e46bf74750 100644
  
  class TestCameraDeviceCallbacks : public hardware::camera2::BnCameraDeviceCallbacks {
 diff --git a/services/camera/libcameraservice/tests/Android.bp b/services/camera/libcameraservice/tests/Android.bp
-index 3616572184..fbe1f41b84 100644
+index 3616572..fbe1f41 100644
 --- a/services/camera/libcameraservice/tests/Android.bp
 +++ b/services/camera/libcameraservice/tests/Android.bp
 @@ -44,7 +44,6 @@ cc_test {
@@ -23946,7 +23989,7 @@ index 3616572184..fbe1f41b84 100644
 +}
 \ No newline at end of file
 diff --git a/services/camera/libcameraservice/tests/CameraProviderManagerTest.cpp b/services/camera/libcameraservice/tests/CameraProviderManagerTest.cpp
-index e9f6979573..a74fd9d863 100644
+index e9f6979..a74fd9d 100644
 --- a/services/camera/libcameraservice/tests/CameraProviderManagerTest.cpp
 +++ b/services/camera/libcameraservice/tests/CameraProviderManagerTest.cpp
 @@ -212,7 +212,7 @@ struct TestICameraProvider : virtual public provider::V2_5::ICameraProvider {
@@ -23976,7 +24019,7 @@ index e9f6979573..a74fd9d863 100644
  };
  
 diff --git a/services/camera/libcameraservice/tests/NV12Compressor.h b/services/camera/libcameraservice/tests/NV12Compressor.h
-index a9598713ec..ee22d5e282 100644
+index a959871..ee22d5e 100644
 --- a/services/camera/libcameraservice/tests/NV12Compressor.h
 +++ b/services/camera/libcameraservice/tests/NV12Compressor.h
 @@ -19,7 +19,6 @@
@@ -23989,7 +24032,7 @@ index a9598713ec..ee22d5e282 100644
  #include <jerror.h>
 diff --git a/services/camera/libcameraservice/tests/PreviewSchedulerTest.cpp b/services/camera/libcameraservice/tests/PreviewSchedulerTest.cpp
 new file mode 100644
-index 0000000000..6586b74840
+index 0000000..6586b74
 --- /dev/null
 +++ b/services/camera/libcameraservice/tests/PreviewSchedulerTest.cpp
 @@ -0,0 +1,213 @@
@@ -24207,7 +24250,7 @@ index 0000000000..6586b74840
 +    ASSERT_EQ(NO_ERROR, surface->disconnect(NATIVE_WINDOW_API_CPU));
 +}
 diff --git a/services/camera/libcameraservice/utils/CameraServiceProxyWrapper.cpp b/services/camera/libcameraservice/utils/CameraServiceProxyWrapper.cpp
-index 69175cc8d5..808191e1fa 100644
+index dae5eea..a2eaa25 100644
 --- a/services/camera/libcameraservice/utils/CameraServiceProxyWrapper.cpp
 +++ b/services/camera/libcameraservice/utils/CameraServiceProxyWrapper.cpp
 @@ -66,11 +66,10 @@ void CameraServiceProxyWrapper::CameraSessionStatsWrapper::onStreamConfigured(
@@ -24286,10 +24329,10 @@ index 69175cc8d5..808191e1fa 100644
  
  void CameraServiceProxyWrapper::logOpen(const String8& id, int facing,
 diff --git a/services/camera/libcameraservice/utils/CameraServiceProxyWrapper.h b/services/camera/libcameraservice/utils/CameraServiceProxyWrapper.h
-index e34a8f0cbd..b1d7b6c717 100644
+index eb818d1..98db6fe 100644
 --- a/services/camera/libcameraservice/utils/CameraServiceProxyWrapper.h
 +++ b/services/camera/libcameraservice/utils/CameraServiceProxyWrapper.h
-@@ -48,9 +48,8 @@ class CameraServiceProxyWrapper {
+@@ -48,9 +48,8 @@ private:
          void onOpen();
          void onClose(int32_t latencyMs);
          void onStreamConfigured(int operatingMode, bool internalReconfig, int32_t latencyMs);
@@ -24300,7 +24343,7 @@ index e34a8f0cbd..b1d7b6c717 100644
                  const std::vector<hardware::CameraStreamStats>& streamStats);
      };
  
-@@ -82,12 +81,11 @@ class CameraServiceProxyWrapper {
+@@ -82,12 +81,11 @@ public:
              int32_t latencyMs);
  
      // Session state becomes active
@@ -24315,7 +24358,7 @@ index e34a8f0cbd..b1d7b6c717 100644
  
      // Ping camera service proxy for user update
 diff --git a/services/camera/libcameraservice/utils/ClientManager.h b/services/camera/libcameraservice/utils/ClientManager.h
-index 074c84dc34..d164885116 100644
+index 074c84d..d164885 100644
 --- a/services/camera/libcameraservice/utils/ClientManager.h
 +++ b/services/camera/libcameraservice/utils/ClientManager.h
 @@ -527,7 +527,12 @@ ClientManager<KEY, VALUE, LISTENER>::wouldEvictLocked(
@@ -24346,7 +24389,7 @@ index 074c84dc34..d164885116 100644
                      !(highestPriorityOwner == owner && owner == curOwner))) {
 diff --git a/services/camera/libcameraservice/utils/IPCTransport.h b/services/camera/libcameraservice/utils/IPCTransport.h
 deleted file mode 100644
-index b8e80acc61..0000000000
+index b8e80ac..0000000
 --- a/services/camera/libcameraservice/utils/IPCTransport.h
 +++ /dev/null
 @@ -1,26 +0,0 @@
@@ -24377,7 +24420,7 @@ index b8e80acc61..0000000000
 -
 -#endif
 diff --git a/services/camera/libcameraservice/utils/SessionConfigurationUtils.cpp b/services/camera/libcameraservice/utils/SessionConfigurationUtils.cpp
-index 2eb2d55e10..a239c81828 100644
+index 2eb2d55..a239c81 100644
 --- a/services/camera/libcameraservice/utils/SessionConfigurationUtils.cpp
 +++ b/services/camera/libcameraservice/utils/SessionConfigurationUtils.cpp
 @@ -13,27 +13,71 @@
@@ -25136,7 +25179,7 @@ index 2eb2d55e10..a239c81828 100644
  } // namespace camera3
  } // namespace android
 diff --git a/services/camera/libcameraservice/utils/SessionConfigurationUtils.h b/services/camera/libcameraservice/utils/SessionConfigurationUtils.h
-index a127c7bdcb..192e2415b8 100644
+index a127c7b..192e241 100644
 --- a/services/camera/libcameraservice/utils/SessionConfigurationUtils.h
 +++ b/services/camera/libcameraservice/utils/SessionConfigurationUtils.h
 @@ -21,18 +21,15 @@
@@ -25343,7 +25386,7 @@ index a127c7bdcb..192e2415b8 100644
  #endif
 diff --git a/services/camera/libcameraservice/utils/SessionConfigurationUtilsHidl.cpp b/services/camera/libcameraservice/utils/SessionConfigurationUtilsHidl.cpp
 deleted file mode 100644
-index 4e6f832560..0000000000
+index 4e6f832..0000000
 --- a/services/camera/libcameraservice/utils/SessionConfigurationUtilsHidl.cpp
 +++ /dev/null
 @@ -1,156 +0,0 @@
@@ -25505,7 +25548,7 @@ index 4e6f832560..0000000000
 -} // namespace android
 diff --git a/services/camera/libcameraservice/utils/SessionConfigurationUtilsHidl.h b/services/camera/libcameraservice/utils/SessionConfigurationUtilsHidl.h
 deleted file mode 100644
-index c47abe03d0..0000000000
+index c47abe0..0000000
 --- a/services/camera/libcameraservice/utils/SessionConfigurationUtilsHidl.h
 +++ /dev/null
 @@ -1,52 +0,0 @@
@@ -25563,7 +25606,7 @@ index c47abe03d0..0000000000
 -#endif
 diff --git a/services/camera/libcameraservice/utils/SessionConfigurationUtilsHost.cpp b/services/camera/libcameraservice/utils/SessionConfigurationUtilsHost.cpp
 deleted file mode 100644
-index 1efdc6071d..0000000000
+index 1efdc60..0000000
 --- a/services/camera/libcameraservice/utils/SessionConfigurationUtilsHost.cpp
 +++ /dev/null
 @@ -1,96 +0,0 @@
@@ -25666,7 +25709,7 @@ index 1efdc6071d..0000000000
 \ No newline at end of file
 diff --git a/services/camera/libcameraservice/utils/SessionConfigurationUtilsHost.h b/services/camera/libcameraservice/utils/SessionConfigurationUtilsHost.h
 deleted file mode 100644
-index 45b1e91ecb..0000000000
+index 45b1e91..0000000
 --- a/services/camera/libcameraservice/utils/SessionConfigurationUtilsHost.h
 +++ /dev/null
 @@ -1,36 +0,0 @@
@@ -25708,7 +25751,7 @@ index 45b1e91ecb..0000000000
 -#endif
 \ No newline at end of file
 diff --git a/services/camera/libcameraservice/utils/SessionStatsBuilder.cpp b/services/camera/libcameraservice/utils/SessionStatsBuilder.cpp
-index c3aac7276a..7a7707cf28 100644
+index c3aac72..7a7707c 100644
 --- a/services/camera/libcameraservice/utils/SessionStatsBuilder.cpp
 +++ b/services/camera/libcameraservice/utils/SessionStatsBuilder.cpp
 @@ -60,7 +60,6 @@ void SessionStatsBuilder::buildAndReset(int64_t* requestCount,
@@ -25720,10 +25763,10 @@ index c3aac7276a..7a7707cf28 100644
          StreamStats& streamStat = streamStats.second;
          streamStat.mRequestedFrameCount = 0;
 diff --git a/services/camera/libcameraservice/utils/SessionStatsBuilder.h b/services/camera/libcameraservice/utils/SessionStatsBuilder.h
-index 2936531cd2..c23abb6067 100644
+index 2936531..c23abb6 100644
 --- a/services/camera/libcameraservice/utils/SessionStatsBuilder.h
 +++ b/services/camera/libcameraservice/utils/SessionStatsBuilder.h
-@@ -84,7 +84,6 @@ class SessionStatsBuilder {
+@@ -84,7 +84,6 @@ private:
      int64_t mErrorResultCount;
      bool mCounterStopped;
      bool mDeviceError;
@@ -25731,3 +25774,6 @@ index 2936531cd2..c23abb6067 100644
      // Map from stream id to stream statistics
      std::map<int, StreamStats> mStatsMap;
  };
+-- 
+2.7.4
+

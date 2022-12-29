@@ -1,29 +1,28 @@
-From 5aaa721658419985ddd1bf0e35ac57b398bc200d Mon Sep 17 00:00:00 2001
+From c64e22f151a050921087ddd461dcfdace362c4d3 Mon Sep 17 00:00:00 2001
 From: Dominggoes Isakh <drjisakh@gmail.com>
 Date: Thu, 20 Oct 2022 22:24:53 +0200
-Subject: [PATCH] Revert "Camera: Add support for readout timestamp"
+Subject: [PATCH 09/10] Revert "Camera: Add support for readout timestamp"
 
 This reverts commit 91e7522cb28d2b1e2e12adc8726db8190d711f2e.
 ---
- .../camera2/CameraCaptureSession.java         | 36 -------------------
- .../camera2/CameraCharacteristics.java        | 34 ------------------
- .../hardware/camera2/CameraMetadata.java      | 22 ------------
- .../impl/CameraCaptureSessionImpl.java        | 15 --------
- .../camera2/impl/CameraDeviceImpl.java        | 24 +++----------
- .../camera2/impl/CaptureCallback.java         |  7 ----
- .../camera2/impl/CaptureResultExtras.java     | 23 +-----------
- .../camera2/params/OutputConfiguration.java   | 25 ++-----------
+ .../hardware/camera2/CameraCaptureSession.java     | 36 ----------------------
+ .../hardware/camera2/CameraCharacteristics.java    | 34 --------------------
+ .../android/hardware/camera2/CameraMetadata.java   | 22 -------------
+ .../camera2/impl/CameraCaptureSessionImpl.java     | 15 ---------
+ .../hardware/camera2/impl/CameraDeviceImpl.java    | 24 +++------------
+ .../hardware/camera2/impl/CaptureCallback.java     |  7 -----
+ .../hardware/camera2/impl/CaptureResultExtras.java | 23 +-------------
+ .../camera2/params/OutputConfiguration.java        | 25 ++-------------
  8 files changed, 7 insertions(+), 179 deletions(-)
 
 diff --git a/core/java/android/hardware/camera2/CameraCaptureSession.java b/core/java/android/hardware/camera2/CameraCaptureSession.java
-index 5b1973ad2dd47..691690c09e0e0 100644
+index 5b1973a..691690c 100644
 --- a/core/java/android/hardware/camera2/CameraCaptureSession.java
 +++ b/core/java/android/hardware/camera2/CameraCaptureSession.java
-@@ -1233,42 +1233,6 @@ public void onCaptureStarted(@NonNull CameraCaptureSession session,
-             // default empty implementation
+@@ -1234,42 +1234,6 @@ public abstract class CameraCaptureSession implements AutoCloseable {
          }
  
--        /**
+         /**
 -         * This method is called when the camera device has started reading out the output
 -         * image for the request, at the beginning of the sensor image readout.
 -         *
@@ -59,18 +58,18 @@ index 5b1973ad2dd47..691690c09e0e0 100644
 -            // default empty implementation
 -        }
 -
-         /**
+-        /**
           * This method is called when some results from an image capture are
           * available.
+          *
 diff --git a/core/java/android/hardware/camera2/CameraCharacteristics.java b/core/java/android/hardware/camera2/CameraCharacteristics.java
-index 861a8502c44d1..c32ad724bb370 100644
+index 861a850..c32ad72 100644
 --- a/core/java/android/hardware/camera2/CameraCharacteristics.java
 +++ b/core/java/android/hardware/camera2/CameraCharacteristics.java
-@@ -4418,40 +4418,6 @@ public Set<String> getPhysicalCameraIds() {
-     public static final Key<android.graphics.Rect[]> SENSOR_OPTICAL_BLACK_REGIONS =
+@@ -4419,40 +4419,6 @@ public final class CameraCharacteristics extends CameraMetadata<CameraCharacteri
              new Key<android.graphics.Rect[]>("android.sensor.opticalBlackRegions", android.graphics.Rect[].class);
  
--    /**
+     /**
 -     * <p>Whether or not the camera device supports readout timestamp and
 -     * onReadoutStarted callback.</p>
 -     * <p>If this tag is HARDWARE, the camera device calls onReadoutStarted in addition to the
@@ -104,18 +103,18 @@ index 861a8502c44d1..c32ad724bb370 100644
 -    public static final Key<Integer> SENSOR_READOUT_TIMESTAMP =
 -            new Key<Integer>("android.sensor.readoutTimestamp", int.class);
 -
-     /**
+-    /**
       * <p>List of lens shading modes for {@link CaptureRequest#SHADING_MODE android.shading.mode} that are supported by this camera device.</p>
       * <p>This list contains lens shading modes that can be set for the camera device.
+      * Camera devices that support the MANUAL_POST_PROCESSING capability will always
 diff --git a/core/java/android/hardware/camera2/CameraMetadata.java b/core/java/android/hardware/camera2/CameraMetadata.java
-index c67a560b58857..eb8c73aced393 100644
+index c67a560..eb8c73a 100644
 --- a/core/java/android/hardware/camera2/CameraMetadata.java
 +++ b/core/java/android/hardware/camera2/CameraMetadata.java
-@@ -1657,28 +1657,6 @@ private static <TKey> boolean shouldKeyBeAdded(TKey key, Field field, int[] filt
-      */
+@@ -1658,28 +1658,6 @@ public abstract class CameraMetadata<TKey> {
      public static final int SENSOR_REFERENCE_ILLUMINANT1_ISO_STUDIO_TUNGSTEN = 24;
  
--    //
+     //
 -    // Enumeration values for CameraCharacteristics#SENSOR_READOUT_TIMESTAMP
 -    //
 -
@@ -137,18 +136,18 @@ index c67a560b58857..eb8c73aced393 100644
 -     */
 -    public static final int SENSOR_READOUT_TIMESTAMP_HARDWARE = 1;
 -
-     //
+-    //
      // Enumeration values for CameraCharacteristics#LED_AVAILABLE_LEDS
      //
+ 
 diff --git a/core/java/android/hardware/camera2/impl/CameraCaptureSessionImpl.java b/core/java/android/hardware/camera2/impl/CameraCaptureSessionImpl.java
-index b9eba9c1d5415..9a9163c724ff0 100644
+index b9eba9c..9a9163c 100644
 --- a/core/java/android/hardware/camera2/impl/CameraCaptureSessionImpl.java
 +++ b/core/java/android/hardware/camera2/impl/CameraCaptureSessionImpl.java
-@@ -656,21 +656,6 @@ public void onCaptureStarted(CameraDevice camera,
-                 }
+@@ -657,21 +657,6 @@ public class CameraCaptureSessionImpl extends CameraCaptureSession
              }
  
--            @Override
+             @Override
 -            public void onReadoutStarted(CameraDevice camera,
 -                    CaptureRequest request, long timestamp, long frameNumber) {
 -                if ((callback != null) && (executor != null)) {
@@ -163,14 +162,15 @@ index b9eba9c1d5415..9a9163c724ff0 100644
 -                }
 -            }
 -
-             @Override
+-            @Override
              public void onCapturePartial(CameraDevice camera,
                      CaptureRequest request, android.hardware.camera2.CaptureResult result) {
+                 if ((callback != null) && (executor != null)) {
 diff --git a/core/java/android/hardware/camera2/impl/CameraDeviceImpl.java b/core/java/android/hardware/camera2/impl/CameraDeviceImpl.java
-index a6c79b3a289f8..3cb0c93d84090 100644
+index a6c79b3..3cb0c93 100644
 --- a/core/java/android/hardware/camera2/impl/CameraDeviceImpl.java
 +++ b/core/java/android/hardware/camera2/impl/CameraDeviceImpl.java
-@@ -2025,16 +2025,12 @@ public void onCaptureStarted(final CaptureResultExtras resultExtras, final long
+@@ -2025,16 +2025,12 @@ public class CameraDeviceImpl extends CameraDevice
                      resultExtras.getLastCompletedReprocessFrameNumber();
              final long lastCompletedZslFrameNumber =
                      resultExtras.getLastCompletedZslFrameNumber();
@@ -188,7 +188,7 @@ index a6c79b3a289f8..3cb0c93d84090 100644
              }
              final CaptureCallbackHolder holder;
  
-@@ -2086,26 +2082,14 @@ public void run() {
+@@ -2086,26 +2082,14 @@ public class CameraDeviceImpl extends CameraDevice
                                                  CameraDeviceImpl.this,
                                                  holder.getRequest(i),
                                                  timestamp - (subsequenceId - i) *
@@ -219,25 +219,25 @@ index a6c79b3a289f8..3cb0c93d84090 100644
                                  }
                              }
 diff --git a/core/java/android/hardware/camera2/impl/CaptureCallback.java b/core/java/android/hardware/camera2/impl/CaptureCallback.java
-index b064e6a1f9752..6defe63b1766a 100644
+index b064e6a..6defe63 100644
 --- a/core/java/android/hardware/camera2/impl/CaptureCallback.java
 +++ b/core/java/android/hardware/camera2/impl/CaptureCallback.java
-@@ -65,13 +65,6 @@ public CameraCaptureSession.CaptureCallback getSessionCallback() {
-     public abstract void onCaptureStarted(CameraDevice camera,
+@@ -66,13 +66,6 @@ public abstract class CaptureCallback {
              CaptureRequest request, long timestamp, long frameNumber);
  
--    /**
+     /**
 -     * This method is called when the camera device has started reading out the output
 -     * image for the request, at the beginning of the sensor image readout.
 -     */
 -    public abstract void onReadoutStarted(CameraDevice camera,
 -            CaptureRequest request, long timestamp, long frameNumber);
 -
-     /**
+-    /**
       * This method is called when some results from an image capture are
       * available.
+      *
 diff --git a/core/java/android/hardware/camera2/impl/CaptureResultExtras.java b/core/java/android/hardware/camera2/impl/CaptureResultExtras.java
-index 8bf94986a4905..5d9da73fd5c06 100644
+index 8bf9498..5d9da73 100644
 --- a/core/java/android/hardware/camera2/impl/CaptureResultExtras.java
 +++ b/core/java/android/hardware/camera2/impl/CaptureResultExtras.java
 @@ -33,8 +33,6 @@ public class CaptureResultExtras implements Parcelable {
@@ -249,7 +249,7 @@ index 8bf94986a4905..5d9da73fd5c06 100644
  
      public static final @android.annotation.NonNull Parcelable.Creator<CaptureResultExtras> CREATOR =
              new Parcelable.Creator<CaptureResultExtras>() {
-@@ -58,8 +56,7 @@ public CaptureResultExtras(int requestId, int subsequenceId, int afTriggerId,
+@@ -58,8 +56,7 @@ public class CaptureResultExtras implements Parcelable {
                                 int partialResultCount, int errorStreamId,
                                 String errorPhysicalCameraId, long lastCompletedRegularFrameNumber,
                                 long lastCompletedReprocessFrameNumber,
@@ -259,7 +259,7 @@ index 8bf94986a4905..5d9da73fd5c06 100644
          this.requestId = requestId;
          this.subsequenceId = subsequenceId;
          this.afTriggerId = afTriggerId;
-@@ -71,8 +68,6 @@ public CaptureResultExtras(int requestId, int subsequenceId, int afTriggerId,
+@@ -71,8 +68,6 @@ public class CaptureResultExtras implements Parcelable {
          this.lastCompletedRegularFrameNumber = lastCompletedRegularFrameNumber;
          this.lastCompletedReprocessFrameNumber = lastCompletedReprocessFrameNumber;
          this.lastCompletedZslFrameNumber = lastCompletedZslFrameNumber;
@@ -268,7 +268,7 @@ index 8bf94986a4905..5d9da73fd5c06 100644
      }
  
      @Override
-@@ -98,10 +93,6 @@ public void writeToParcel(Parcel dest, int flags) {
+@@ -98,10 +93,6 @@ public class CaptureResultExtras implements Parcelable {
          dest.writeLong(lastCompletedRegularFrameNumber);
          dest.writeLong(lastCompletedReprocessFrameNumber);
          dest.writeLong(lastCompletedZslFrameNumber);
@@ -279,7 +279,7 @@ index 8bf94986a4905..5d9da73fd5c06 100644
      }
  
      public void readFromParcel(Parcel in) {
-@@ -119,10 +110,6 @@ public void readFromParcel(Parcel in) {
+@@ -119,10 +110,6 @@ public class CaptureResultExtras implements Parcelable {
          lastCompletedRegularFrameNumber = in.readLong();
          lastCompletedReprocessFrameNumber = in.readLong();
          lastCompletedZslFrameNumber = in.readLong();
@@ -290,7 +290,7 @@ index 8bf94986a4905..5d9da73fd5c06 100644
      }
  
      public String getErrorPhysicalCameraId() {
-@@ -168,12 +155,4 @@ public long getLastCompletedReprocessFrameNumber() {
+@@ -168,12 +155,4 @@ public class CaptureResultExtras implements Parcelable {
      public long getLastCompletedZslFrameNumber() {
          return lastCompletedZslFrameNumber;
      }
@@ -304,10 +304,10 @@ index 8bf94986a4905..5d9da73fd5c06 100644
 -    }
  }
 diff --git a/core/java/android/hardware/camera2/params/OutputConfiguration.java b/core/java/android/hardware/camera2/params/OutputConfiguration.java
-index 9e87037798635..4a2517763aaec 100644
+index 90e92db..bd92846 100644
 --- a/core/java/android/hardware/camera2/params/OutputConfiguration.java
 +++ b/core/java/android/hardware/camera2/params/OutputConfiguration.java
-@@ -245,26 +245,6 @@ public final class OutputConfiguration implements Parcelable {
+@@ -247,26 +247,6 @@ public final class OutputConfiguration implements Parcelable {
       */
      public static final int TIMESTAMP_BASE_CHOREOGRAPHER_SYNCED = 4;
  
@@ -334,7 +334,7 @@ index 9e87037798635..4a2517763aaec 100644
      /** @hide */
      @Retention(RetentionPolicy.SOURCE)
      @IntDef(prefix = {"TIMESTAMP_BASE_"}, value =
-@@ -272,8 +252,7 @@ public final class OutputConfiguration implements Parcelable {
+@@ -274,8 +254,7 @@ public final class OutputConfiguration implements Parcelable {
           TIMESTAMP_BASE_SENSOR,
           TIMESTAMP_BASE_MONOTONIC,
           TIMESTAMP_BASE_REALTIME,
@@ -344,7 +344,7 @@ index 9e87037798635..4a2517763aaec 100644
      public @interface TimestampBase {};
  
      /** @hide */
-@@ -995,7 +974,7 @@ public long getStreamUseCase() {
+@@ -997,7 +976,7 @@ public final class OutputConfiguration implements Parcelable {
      public void setTimestampBase(@TimestampBase int timestampBase) {
          // Verify that the value is in range
          if (timestampBase < TIMESTAMP_BASE_DEFAULT ||
@@ -353,3 +353,6 @@ index 9e87037798635..4a2517763aaec 100644
              throw new IllegalArgumentException("Not a valid timestamp base value " +
                      timestampBase);
          }
+-- 
+2.7.4
+
