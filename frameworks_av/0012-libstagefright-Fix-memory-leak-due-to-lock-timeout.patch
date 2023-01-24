@@ -1,7 +1,7 @@
-From a9413ea10a2c36806ff7a96a46f66b5a05059f75 Mon Sep 17 00:00:00 2001
+From d9c4eba26cdf59dbe0e79e3c52ef1c6dcf93e166 Mon Sep 17 00:00:00 2001
 From: Priyanka Gujjula <pgujjula@codeaurora.org>
 Date: Mon, 25 Mar 2019 21:11:18 +0530
-Subject: [PATCH 25/26] libstagefright: Fix memory leak due to lock timeout
+Subject: [PATCH 27/34] libstagefright: Fix memory leak due to lock timeout
 
 Memory leak has occurred when freeBuffer tries to
 acquire the lock which is acquired by freeNode and

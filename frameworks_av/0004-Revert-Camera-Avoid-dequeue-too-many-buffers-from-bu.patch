@@ -1,7 +1,7 @@
-From 716ab301b93c0a4c5a701f60e8aae64b647e7888 Mon Sep 17 00:00:00 2001
+From 975cd4b7e76dbfcf2dd20fde7392059e180748ae Mon Sep 17 00:00:00 2001
 From: z3DD3r <z3dd3r@gmail.com>
 Date: Fri, 9 Dec 2022 22:52:15 +0300
-Subject: [PATCH 02/26] Revert "Camera: Avoid dequeue too many buffers from
+Subject: [PATCH 04/34] Revert "Camera: Avoid dequeue too many buffers from
  buffer queue"
 
 This reverts commit c235270ed552cbbe1df31cf3862f913872fab38a.

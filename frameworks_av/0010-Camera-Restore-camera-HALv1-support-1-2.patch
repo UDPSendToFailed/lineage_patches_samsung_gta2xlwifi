@@ -1,7 +1,7 @@
-From 9f9fc51b4a0db6a0f834ba0bac957efc37159a89 Mon Sep 17 00:00:00 2001
+From abf775ed4440936a70f1ca288a8b55701e80c7af Mon Sep 17 00:00:00 2001
 From: Kyle Harrison <khwebmail@gmail.com>
 Date: Thu, 28 Oct 2021 13:54:35 +0100
-Subject: [PATCH 11/26] Camera: Restore camera HALv1 support [1/2]
+Subject: [PATCH 13/34] Camera: Restore camera HALv1 support [1/2]
 
 Revert "Camera: remove the camera device version check during statusCallback"
 This reverts commit b8259798dc04226eb09114527cb124060fbf335b.
